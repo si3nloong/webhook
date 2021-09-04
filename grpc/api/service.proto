@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package proto;
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service CurlHookService {
+    rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+    rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+    // rpc Authorization(AuthorizationRequest) returns (AuthorizationResponse){}
+    // rpc AccessToken(AccessTokenRequest) returns (AccessTokenResponse){}
+    // rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse){}
+}
+
+message HealthCheckRequest {
+  string service = 1;
+}
+    
+message HealthCheckResponse {
+enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;  // Used only by the Watch method.
+}
+ServingStatus status = 1;
+}
+
+message SearchRequest {
+  string query = 1;
+  int32 page_number = 2;
+  int32 result_per_page = 3;
+}
