@@ -14,11 +14,9 @@ var (
 	userLicense string
 
 	rootCmd = &cobra.Command{
-		Use:   "cobra",
+		Use:   "curlhook",
 		Short: "A generator for Cobra based Applications",
-		Long: `Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+		Long:  `CurlHook is a CLI library for Go that empowers applications.`,
 	}
 )
 
@@ -38,6 +36,11 @@ func init() {
 	viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
 	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	viper.SetDefault("license", "apache")
+
+	viper.SetDefault("CURLHOOK_REDIS_HOST", "localhost")
+	viper.SetDefault("CURLHOOK_REDIS_PORT", "6379")
+	viper.SetDefault("CURLHOOK_REDIS_CLUSTER", false)
+	// viper.SetDefault("grpc.")
 
 	// rootCmd.AddCommand(addCmd)
 	// rootCmd.AddCommand(initCmd)

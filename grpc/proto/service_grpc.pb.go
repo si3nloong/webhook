@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 type CurlHookServiceClient interface {
 	Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (CurlHookService_WatchClient, error)
+	SendWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error)
 }
 
 type curlHookServiceClient struct {
@@ -70,12 +71,22 @@ func (x *curlHookServiceWatchClient) Recv() (*HealthCheckResponse, error) {
 	return m, nil
 }
 
+func (c *curlHookServiceClient) SendWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error) {
+	out := new(SendWebhookResponse)
+	err := c.cc.Invoke(ctx, "/proto.CurlHookService/SendWebhook", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CurlHookServiceServer is the server API for CurlHookService service.
 // All implementations must embed UnimplementedCurlHookServiceServer
 // for forward compatibility
 type CurlHookServiceServer interface {
 	Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	Watch(*HealthCheckRequest, CurlHookService_WatchServer) error
+	SendWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error)
 	mustEmbedUnimplementedCurlHookServiceServer()
 }
 
@@ -88,6 +99,9 @@ func (UnimplementedCurlHookServiceServer) Check(context.Context, *HealthCheckReq
 }
 func (UnimplementedCurlHookServiceServer) Watch(*HealthCheckRequest, CurlHookService_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+}
+func (UnimplementedCurlHookServiceServer) SendWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendWebhook not implemented")
 }
 func (UnimplementedCurlHookServiceServer) mustEmbedUnimplementedCurlHookServiceServer() {}
 
@@ -141,6 +155,24 @@ func (x *curlHookServiceWatchServer) Send(m *HealthCheckResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _CurlHookService_SendWebhook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendWebhookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CurlHookServiceServer).SendWebhook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.CurlHookService/SendWebhook",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CurlHookServiceServer).SendWebhook(ctx, req.(*SendWebhookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CurlHookService_ServiceDesc is the grpc.ServiceDesc for CurlHookService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -151,6 +183,10 @@ var CurlHookService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Check",
 			Handler:    _CurlHookService_Check_Handler,
+		},
+		{
+			MethodName: "SendWebhook",
+			Handler:    _CurlHookService_SendWebhook_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

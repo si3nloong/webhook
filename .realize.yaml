@@ -5,6 +5,11 @@ settings:
 schema:
 - name: go-webhook
   path: .
+  env:
+    CURLHOOK_REDIS_CLUSTER: true
+    CURLHOOK_REDIS_HOST: "localhost"
+    CURLHOOK_REDIS_PORT: "6379"
+    CURLHOOK_REDIS_PASSWORD: ""
   commands:
     install:
       status: true
