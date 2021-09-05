@@ -1,4 +1,4 @@
-# CurlHook
+# signaller
 
 > A webhook server using curl.
 

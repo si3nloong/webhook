@@ -1,7 +1,11 @@
 package pubsub
 
-import "context"
+import (
+	"context"
+
+	"github.com/si3nloong/signaller/grpc/proto"
+)
 
 type MessageQueue interface {
-	Publish(context.Context) error
+	Publish(context.Context, *proto.SendWebhookRequest) error
 }

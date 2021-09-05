@@ -1,4 +1,4 @@
-generate-protobuf :
+generate-protobuf:
 	@rm -rf ./grpc/proto/* && \
 	protoc --proto_path=./grpc/api \
 	--go_out=./grpc/proto --go_opt=paths=source_relative \
@@ -6,3 +6,6 @@ generate-protobuf :
 	./grpc/api/*.proto && \
 	protoc-go-inject-tag -input="./grpc/proto/*.pb.go" && \
 	echo "proto code generation successful"
+
+build:
+	go build -o signaller main.go	
