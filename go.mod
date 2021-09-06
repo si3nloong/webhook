@@ -1,4 +1,4 @@
-module github.com/si3nloong/signaller
+module github.com/si3nloong/rwhook
 
 go 1.17
 

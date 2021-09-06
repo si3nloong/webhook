@@ -8,4 +8,4 @@ generate-protobuf:
 	echo "proto code generation successful"
 
 build:
-	go build -o signaller main.go	
+	go build -o rwhook main.go	

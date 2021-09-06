@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/nats-io/nats.go"
-	pb "github.com/si3nloong/signaller/grpc/proto"
+	pb "github.com/si3nloong/rwhook/grpc/proto"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/protobuf/proto"
 )

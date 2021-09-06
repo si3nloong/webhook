@@ -3,7 +3,7 @@ package pubsub
 import (
 	"context"
 
-	"github.com/si3nloong/signaller/grpc/proto"
+	"github.com/si3nloong/rwhook/grpc/proto"
 )
 
 type MessageQueue interface {
