@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -11,10 +12,10 @@ import (
 
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
-	"github.com/si3nloong/rwhook/cmd"
-	rpc "github.com/si3nloong/rwhook/grpc"
-	"github.com/si3nloong/rwhook/grpc/proto"
-	"github.com/si3nloong/rwhook/pubsub/nats"
+	"github.com/si3nloong/webhook/cmd"
+	rpc "github.com/si3nloong/webhook/grpc"
+	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/pubsub/nats"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -26,6 +27,15 @@ func Hello(ctx *fasthttp.RequestCtx) {
 
 func main() {
 
+	pwd, err := os.Getwd()
+	viper.AddConfigPath(pwd)
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+	buf := new(bytes.Buffer)
+	viper.ReadConfig(buf)
+	log.Println(buf.String())
+	log.Println(pwd, err)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())

@@ -1,4 +1,4 @@
-module github.com/si3nloong/rwhook
+module github.com/si3nloong/webhook
 
 go 1.17
 

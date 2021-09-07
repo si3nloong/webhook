@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/si3nloong/rwhook/grpc/proto"
+	"github.com/si3nloong/webhook/grpc/proto"
 	"google.golang.org/grpc/status"
 )
 

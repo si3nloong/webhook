@@ -35,7 +35,6 @@ func init() {
 }
 
 func initConfig() {
-	log.Println("here 3")
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)

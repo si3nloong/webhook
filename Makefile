@@ -8,4 +8,4 @@ generate-protobuf:
 	echo "proto code generation successful"
 
 build:
-	go build -o rwhook main.go	
+	go build -o webhook main.go	

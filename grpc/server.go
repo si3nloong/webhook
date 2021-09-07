@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"github.com/go-playground/validator/v10"
-	"github.com/si3nloong/rwhook/grpc/proto"
-	"github.com/si3nloong/rwhook/pubsub"
+	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/pubsub"
 )
 
 type Server struct {

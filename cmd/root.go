@@ -13,9 +13,9 @@ var (
 	userLicense string
 
 	rootCmd = &cobra.Command{
-		Use:   "rwhook",
+		Use:   "webhook",
 		Short: "A generator for Cobra based Applications",
-		Long:  `rwhook is a CLI library for Go that empowers applications.`,
+		Long:  `webhook is a CLI library for Go that empowers applications.`,
 	}
 )
 

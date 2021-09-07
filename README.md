@@ -5,7 +5,7 @@
 ## 🔨 Installation
 
 ```bash
-go get github.com/si3nloong/rwhook
+go get github.com/si3nloong/webhook
 ```
 
 ## Features
@@ -14,5 +14,13 @@ go get github.com/si3nloong/rwhook
 - Support gRPC
 - Support Redis
 - Support NATS
-- Dockerise
+- Dockerize
 - Configurable
+- Kubernetes ready
+
+
+## Disclaimer
+
+This project still under development, don't use this in production!
+
+## License
