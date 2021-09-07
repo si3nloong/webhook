@@ -1,9 +1,13 @@
 package nats
 
 import (
+	"errors"
 	"log"
+	"net"
+	"reflect"
 	"time"
 
+	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 	pb "github.com/si3nloong/webhook/grpc/proto"
 	"github.com/valyala/fasthttp"
@@ -19,6 +23,12 @@ func New() *Client {
 	// Connect to NATS
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
+		panic(err)
+	}
+
+	if err := handleMessage(&pb.SendWebhookRequest{
+		Url: "https://183jkashdkjhasjkdh.com",
+	}); err != nil {
 		panic(err)
 	}
 
@@ -52,7 +62,7 @@ func New() *Client {
 			func(msg *nats.Msg) {
 				log.Println("Handle message ========>")
 				log.Println(string(msg.Data))
-				log.Println(msg)
+				// log.Println(msg)
 				req := new(pb.SendWebhookRequest)
 
 				if err := proto.Unmarshal(msg.Data, req); err != nil {
@@ -62,15 +72,15 @@ func New() *Client {
 
 				if err := handleMessage(req); err != nil {
 					log.Println(err)
-					msg.Nak()
+					// msg.Nak()
 					return
 				}
 
+				// if everything ok, acknowledge and don't retry
 				msg.Ack()
 			},
-			nats.AckExplicit(),
-			// nats.Durable("webhook"),
-			// nats.AckWait(30*time.Second),
+			nats.ManualAck(),
+			nats.AckWait(10*time.Second),
 			nats.MaxDeliver(10),
 		)
 
@@ -100,6 +110,12 @@ func New() *Client {
 }
 
 func handleMessage(req *pb.SendWebhookRequest) error {
+	retry.Do(
+		func() error {
+			return nil
+		},
+		retry.Attempts(3),
+	)
 	httpReq := fasthttp.AcquireRequest()
 	httpResp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseRequest(httpReq)
@@ -121,7 +137,12 @@ func handleMessage(req *pb.SendWebhookRequest) error {
 	log.Println("Request =======>")
 	log.Println(httpReq.String())
 
-	if err := fasthttp.DoTimeout(httpReq, httpResp, timeout); err != nil {
+	var dnsError *net.DNSError
+	if err := fasthttp.DoTimeout(httpReq, httpResp, timeout); errors.As(err, &dnsError) {
+		// If it's a invalid host, drop the request directly
+		log.Println(err, reflect.TypeOf(err))
+		return err
+	} else if err != nil {
 		return err
 	}
 

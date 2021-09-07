@@ -14,4 +14,7 @@ require (
 	google.golang.org/protobuf v1.27.1
 )
 
-require github.com/nats-io/nats-server/v2 v2.4.0 // indirect
+require (
+	github.com/avast/retry-go v2.7.0+incompatible // indirect
+	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
+)
