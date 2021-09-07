@@ -9,6 +9,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Config struct {
+	Enabled bool   `mapstructure:"enabled"`
+	Port    string `mapstructure:"port"`
+	GRPC    struct {
+		Enabled bool   `mapstructure:"enabled"`
+		Port    string `mapstructure:"port"`
+	} `mapstructure:"grpc"`
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
 

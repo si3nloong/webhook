@@ -11,6 +11,7 @@ import (
 
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
+	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
 	"github.com/si3nloong/webhook/grpc/proto"
 	rest "github.com/si3nloong/webhook/http"
@@ -19,15 +20,6 @@ import (
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
 )
-
-type Config struct {
-	Enabled bool   `mapstructure:"enabled"`
-	Port    string `mapstructure:"port"`
-	GRPC    struct {
-		Enabled bool   `mapstructure:"enabled"`
-		Port    string `mapstructure:"port"`
-	} `mapstructure:"grpc"`
-}
 
 func main() {
 
@@ -46,7 +38,7 @@ func main() {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 
-	config := Config{}
+	config := cmd.Config{}
 	config.Enabled = true
 	config.Port = "3000"
 	config.GRPC.Port = "9000"
