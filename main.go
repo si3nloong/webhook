@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
-	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
 	"github.com/si3nloong/webhook/grpc/proto"
 	rest "github.com/si3nloong/webhook/http"
@@ -22,22 +20,43 @@ import (
 	"google.golang.org/grpc"
 )
 
+type Config struct {
+	Enabled bool   `mapstructure:"enabled"`
+	Port    string `mapstructure:"port"`
+	GRPC    struct {
+		Enabled bool   `mapstructure:"enabled"`
+		Port    string `mapstructure:"port"`
+	} `mapstructure:"grpc"`
+}
+
 func main() {
 
-	pwd, err := os.Getwd()
-	viper.AddConfigPath(pwd)
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
-	buf := new(bytes.Buffer)
-	viper.ReadConfig(buf)
-	log.Println(buf.String())
-	log.Println(pwd, err)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	pwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	viper.AddConfigPath(pwd)
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+
+	config := Config{}
+	config.Enabled = true
+	config.Port = "3000"
+	config.GRPC.Port = "9000"
+	if err := viper.Unmarshal(&config); err != nil {
+		panic(err)
+	}
+
+	log.Println(config)
+
+	// cmd.Execute()
 	v := validator.New()
 	pbc := nats.New()
 
@@ -46,35 +65,36 @@ func main() {
 	log.Println("redis port =>", viper.Get("CURLHOOK_REDIS_PORT"))
 	log.Println("redis password =>", viper.Get("CURLHOOK_REDIS_PASSWORD"))
 
-	go func() {
-		httpPort := "8000"
-		svr := rest.NewServer(v)
-		httpServer := router.New()
-		httpServer.GET("/health", svr.Health)
-		log.Printf("http serve at %s", httpPort)
-		if err := fasthttp.ListenAndServe(":"+httpPort, httpServer.Handler); err != nil {
-			log.Println(err)
-			cancel()
-		}
-	}()
+	if config.Enabled {
+		go func() {
+			svr := rest.NewServer(v)
+			httpServer := router.New()
+			httpServer.GET("/health", svr.Health)
+			log.Printf("RESTful serve at %s", config.Port)
 
-	cmd.Execute()
+			if err := fasthttp.ListenAndServe(":"+config.Port, httpServer.Handler); err != nil {
+				defer cancel()
+				panic(err)
+			}
+		}()
+	}
 
 	grpcServer := grpc.NewServer()
-	proto.RegisterCurlHookServiceServer(grpcServer, rpc.NewServer(v, pbc))
 
-	go func() {
-		grpcPort := "9000"
-		lis, err := net.Listen("tcp", ":"+grpcPort)
-		if err != nil {
-			panic(err)
-		}
+	if config.GRPC.Enabled {
+		proto.RegisterCurlHookServiceServer(grpcServer, rpc.NewServer(v, pbc))
+		go func() {
+			lis, err := net.Listen("tcp", ":"+config.GRPC.Port)
+			if err != nil {
+				panic(err)
+			}
 
-		log.Printf("gRPC serve at %s", grpcPort)
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %s", err)
-		}
-	}()
+			log.Printf("gRPC serve at %s", config.GRPC.Port)
+			if err := grpcServer.Serve(lis); err != nil {
+				log.Fatalf("failed to serve: %s", err)
+			}
+		}()
+	}
 
 	select {
 	case v := <-quit:

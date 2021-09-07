@@ -1,4 +1,4 @@
-port: 3000
+# port: 3000
 
 grpc:
   enabled: false # enable gRPC server
