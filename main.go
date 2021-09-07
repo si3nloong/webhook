@@ -15,15 +15,12 @@ import (
 	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
 	"github.com/si3nloong/webhook/grpc/proto"
+	rest "github.com/si3nloong/webhook/http"
 	"github.com/si3nloong/webhook/pubsub/nats"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
 )
-
-func Hello(ctx *fasthttp.RequestCtx) {
-	fmt.Fprintf(ctx, "Hello, %s!\n", ctx.UserValue("name"))
-}
 
 func main() {
 
@@ -51,9 +48,9 @@ func main() {
 
 	go func() {
 		httpPort := "8000"
+		svr := rest.NewServer(v)
 		httpServer := router.New()
-		httpServer.GET("/", Hello)
-		// r.GET("/hello/{name}", Hello)
+		httpServer.GET("/health", svr.Health)
 		log.Printf("http serve at %s", httpPort)
 		if err := fasthttp.ListenAndServe(":"+httpPort, httpServer.Handler); err != nil {
 			log.Println(err)

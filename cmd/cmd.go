@@ -10,7 +10,6 @@ import (
 )
 
 func init() {
-	log.Println("here 1")
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/config.yaml)")
@@ -39,7 +38,6 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		log.Println("HERE")
 		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)

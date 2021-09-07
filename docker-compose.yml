@@ -1,0 +1,47 @@
+version: "3"
+services:
+  graph:
+    build:
+      # Set the context path to current directory
+      context: .
+      # Define the Dockerfile we going to use
+      dockerfile: ./Dockerfile
+    restart:
+      on-failure
+      # Set environment variables
+    environment:
+      PORT: "5005"
+    networks:
+      - intranet
+    depends_on:
+      # - mongodb
+      - jetstream
+    links: # Link to containers in another service
+      # - mongodb
+      - jetstream
+    ports:
+      - "8081:8081"
+
+  # Define the `jetstream` service
+  jetstream:
+    image: "nats:latest"
+    restart: on-failure
+    command: server -js
+    ports:
+      - 4222:4222
+    networks:
+      - intranet
+    # Define the storage path
+    volumes:
+      - jsm:/tmp/jetstream
+
+  # Define the `redis` service
+  redis:
+    image: "redis:alpine"
+
+volumes:
+  jsm: {}
+
+networks:
+  intranet:
+    driver: bridge

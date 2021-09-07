@@ -1,12 +1,11 @@
 package http
 
 import (
-	"context"
+	"fmt"
 
-	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/valyala/fasthttp"
 )
 
-func (s *Server) Check(ctx context.Context, req *proto.HealthCheckRequest) (*proto.HealthCheckResponse, error) {
-	resp := new(proto.HealthCheckResponse)
-	return resp, nil
+func (s *Server) Health(ctx *fasthttp.RequestCtx) {
+	fmt.Fprintf(ctx, "Hello, %s!\n", ctx.UserValue("name"))
 }
