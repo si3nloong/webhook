@@ -18,7 +18,6 @@ go get github.com/si3nloong/webhook
 - Configurable
 - Kubernetes ready
 
-
 ## Disclaimer
 
 This project still under development, don't use this in production!

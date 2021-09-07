@@ -46,16 +46,8 @@ func main() {
 		panic(err)
 	}
 
-	log.Println(config)
-
-	// cmd.Execute()
 	v := validator.New()
 	pbc := nats.New()
-
-	log.Println("redis cluster =>", viper.GetBool("CURLHOOK_REDIS_CLUSTER"))
-	log.Println("redis host =>", viper.Get("CURLHOOK_REDIS_HOST"))
-	log.Println("redis port =>", viper.Get("CURLHOOK_REDIS_PORT"))
-	log.Println("redis password =>", viper.Get("CURLHOOK_REDIS_PASSWORD"))
 
 	if config.Enabled {
 		go func() {
@@ -96,7 +88,5 @@ func main() {
 	case done := <-ctx.Done():
 		log.Println("ctx.Done: %v", done)
 	}
-	log.Println(viper.Get("author"))
-	// viper.SetConfigType("yaml")
 
 }
