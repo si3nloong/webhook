@@ -4,18 +4,29 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Enabled bool   `mapstructure:"enabled"`
-	Port    string `mapstructure:"port"`
-	GRPC    struct {
+	Enabled        bool   `mapstructure:"enabled"`
+	Port           string `mapstructure:"port" validate:"numeric"`
+	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
+	RetryMechanism string `mapstructure:"retry_mechanism" validate:""`
+	NoOfWorker     int    `mapstructure:"no_of_worker"`
+	GRPC           struct {
 		Enabled bool   `mapstructure:"enabled"`
-		Port    string `mapstructure:"port"`
+		Port    string `mapstructure:"port" validate:"numeric"`
 	} `mapstructure:"grpc"`
+}
+
+func (c *Config) SetDefault() {
+	c.NoOfWorker = runtime.NumCPU()
+	c.Enabled = true
+	c.Port = "3000"
+	c.GRPC.Port = "9000"
 }
 
 func init() {

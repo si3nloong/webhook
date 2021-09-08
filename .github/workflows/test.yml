@@ -1,0 +1,16 @@
+name: test-ci
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2

@@ -37,21 +37,27 @@ message_queue:
 - Configurable
 - Kubernetes ready
 
-## RESTful API
+## ⚡️ RESTful APIs
 
-- **POST** `/v1/webhook/send`
+Please refer to [here](/http/README.md).
 
-| Name    | Data Type           | Description        | Required |
-| ------- | ------------------- | ------------------ | :------: |
-| url     | `string`            | URI                |    ✅    |
-| headers | `map[string]string` | HTTP headers       |    ❌    |
-| body    | `string`            | HTTP body          |    ❌    |
-| retry   | `uint`              | Maximum of retries |    ❌    |
+## 💡 gRPC API
+
+Please refer to [proto](/grpc/api) files.
 
 ## ⚠️ Disclaimer
 
 This project still under development, don't use this in production!
 
+## 🎉 Big Thanks To
+
+Thanks to these awesome companies for their support of Open Source developers ❤
+
+[![GitHub](https://jstools.dev/img/badges/github.svg)](https://github.com/open-source)
+[![NPM](https://jstools.dev/img/badges/npm.svg)](https://www.npmjs.com/)
+
 ## License
 
-[GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+Copyright 2019 SianLoong
+
+Licensed under the MIT License.
