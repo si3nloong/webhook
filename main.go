@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/fasthttp/router"
@@ -40,6 +41,7 @@ func main() {
 
 	v := validator.New()
 	cfg := cmd.Config{}
+	cfg.NoOfWorker = runtime.NumCPU()
 	cfg.Enabled = true
 	cfg.Port = "3000"
 	cfg.GRPC.Port = "9000"

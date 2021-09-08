@@ -2,6 +2,7 @@ enabled: false
 port: 3000
 retry: 10
 retry_mechanism: "backoff"
+no_of_worker: 1
 
 grpc:
   enabled: false # enable gRPC server
