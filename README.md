@@ -56,6 +56,13 @@ Please refer to [proto](/grpc/api) files.
 
 This project still under development, don't use this in production!
 
+## 🎉 Big Thanks To
+
+Thanks to these awesome companies for their support of Open Source developers ❤
+
+[![GitHub](https://jstools.dev/img/badges/github.svg)](https://github.com/open-source)
+[![NPM](https://jstools.dev/img/badges/npm.svg)](https://www.npmjs.com/)
+
 ## License
 
 Copyright 2019 SianLoong
