@@ -10,11 +10,13 @@ import (
 )
 
 type Config struct {
-	Enabled bool   `mapstructure:"enabled"`
-	Port    string `mapstructure:"port"`
-	GRPC    struct {
+	Enabled        bool   `mapstructure:"enabled"`
+	Port           string `mapstructure:"port" validate:"numeric"`
+	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
+	RetryMechanism string `mapstructure:"retry_mechanism" validate:""`
+	GRPC           struct {
 		Enabled bool   `mapstructure:"enabled"`
-		Port    string `mapstructure:"port"`
+		Port    string `mapstructure:"port" validate:"numeric"`
 	} `mapstructure:"grpc"`
 }
 

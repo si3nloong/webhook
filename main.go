@@ -38,25 +38,32 @@ func main() {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 
-	config := cmd.Config{}
-	config.Enabled = true
-	config.Port = "3000"
-	config.GRPC.Port = "9000"
-	if err := viper.Unmarshal(&config); err != nil {
+	v := validator.New()
+	cfg := cmd.Config{}
+	cfg.Enabled = true
+	cfg.Port = "3000"
+	cfg.GRPC.Port = "9000"
+	if err := viper.Unmarshal(&cfg); err != nil {
 		panic(err)
 	}
 
-	v := validator.New()
-	pbc := nats.New()
+	if err := v.StructCtx(ctx, cfg); err != nil {
+		panic(err)
+	}
 
-	if config.Enabled {
+	// testing
+	if err := sendWebhook(&cfg, &proto.SendWebhookRequest{}); err != nil {
+		log.Fatal(err)
+	}
+
+	if cfg.Enabled {
 		go func() {
 			svr := rest.NewServer(v)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
-			log.Printf("RESTful serve at %s", config.Port)
+			log.Printf("RESTful serve at %s", cfg.Port)
 
-			if err := fasthttp.ListenAndServe(":"+config.Port, httpServer.Handler); err != nil {
+			if err := fasthttp.ListenAndServe(":"+cfg.Port, httpServer.Handler); err != nil {
 				defer cancel()
 				panic(err)
 			}
@@ -65,15 +72,16 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	if config.GRPC.Enabled {
+	if cfg.GRPC.Enabled {
+		pbc := nats.New()
 		proto.RegisterCurlHookServiceServer(grpcServer, rpc.NewServer(v, pbc))
 		go func() {
-			lis, err := net.Listen("tcp", ":"+config.GRPC.Port)
+			lis, err := net.Listen("tcp", ":"+cfg.GRPC.Port)
 			if err != nil {
 				panic(err)
 			}
 
-			log.Printf("gRPC serve at %s", config.GRPC.Port)
+			log.Printf("gRPC serve at %s", cfg.GRPC.Port)
 			if err := grpcServer.Serve(lis); err != nil {
 				log.Fatalf("failed to serve: %s", err)
 			}
