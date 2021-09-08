@@ -26,13 +26,27 @@ message_queue:
 
 ## ✨ Features
 
-- Support [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API
+- Support [YAML](https://yaml.org/) and [env](https://en.wikipedia.org/wiki/Env) configuration
+- Support retry send webhook if the response is fail.
+- [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API ready
 - Support [gRPC](https://grpc.io/) protocol
 - Allow to send a webhook using [cURL](https://curl.se/) command
 - Support Redis, NATS, NSQ as [message queue](https://en.wikipedia.org/wiki/Message_queue) engine
+- CLI ready
 - Dockerize
 - Configurable
 - Kubernetes ready
+
+## RESTful API
+
+- **POST** `/v1/webhook/send`
+
+| Name    | Data Type           | Description        | Required |
+| ------- | ------------------- | ------------------ | :------: |
+| url     | `string`            | URI                |    ✅    |
+| headers | `map[string]string` | HTTP headers       |    ❌    |
+| body    | `string`            | HTTP body          |    ❌    |
+| retry   | `uint`              | Maximum of retries |    ❌    |
 
 ## ⚠️ Disclaimer
 

@@ -15,6 +15,6 @@ require (
 )
 
 require (
-	github.com/avast/retry-go v2.7.0+incompatible // indirect
+	github.com/avast/retry-go v2.7.0+incompatible
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
 )
