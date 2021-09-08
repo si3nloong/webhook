@@ -37,7 +37,7 @@ message_queue:
 - Configurable
 - Kubernetes ready
 
-## RESTful API
+## ⚡️ RESTful API
 
 - **POST** `/v1/webhook/send`
 
@@ -47,6 +47,10 @@ message_queue:
 | headers | `map[string]string` | HTTP headers       |    ❌    |
 | body    | `string`            | HTTP body          |    ❌    |
 | retry   | `uint`              | Maximum of retries |    ❌    |
+
+## 💡 gRPC API
+
+Please refer to [proto](/grpc/api) files.
 
 ## ⚠️ Disclaimer
 
