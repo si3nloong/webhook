@@ -58,4 +58,6 @@ This project still under development, don't use this in production!
 
 ## License
 
-[GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+Copyright 2019 SianLoong
+
+Licensed under the MIT License.
