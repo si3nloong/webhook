@@ -218,10 +218,11 @@ type SendWebhookRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	Method SendWebhookRequest_HttpMethod `protobuf:"varint,1,opt,name=method,proto3,enum=proto.SendWebhookRequest_HttpMethod" json:"method,omitempty"`
-	// @gotags: validate:"required,url"
-	Url     string            `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty" validate:"required,url"`
+	// @gotags: validate:"required,url,max=1000"
+	Url     string            `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty" validate:"required,url,max=1000"`
 	Headers map[string]string `protobuf:"bytes,3,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Body    string            `protobuf:"bytes,4,opt,name=body,proto3" json:"body,omitempty"`
+	// @gotags: validate:"max=1024"
+	Body string `protobuf:"bytes,4,opt,name=body,proto3" json:"body,omitempty" validate:"max=1024"`
 	// @gotags: validate:"lte=10"
 	Retry   uint32 `protobuf:"varint,5,opt,name=retry,proto3" json:"retry,omitempty" validate:"lte=10"`
 	Timeout uint32 `protobuf:"varint,6,opt,name=timeout,proto3" json:"timeout,omitempty"`
