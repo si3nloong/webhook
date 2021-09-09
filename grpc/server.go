@@ -4,17 +4,17 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/si3nloong/webhook/grpc/proto"
 	"github.com/si3nloong/webhook/pubsub"
+	"github.com/si3nloong/webhook/shared"
 )
 
 type Server struct {
-	*validator.Validate
-	mq pubsub.MessageQueue
+	shared.Server
 	proto.UnimplementedCurlHookServiceServer
 }
 
-func NewServer(v *validator.Validate, mq pubsub.MessageQueue) proto.CurlHookServiceServer {
-	return &Server{
-		Validate: v,
-		mq:       mq,
-	}
+func NewServer(mq pubsub.MessageQueue, v *validator.Validate) proto.CurlHookServiceServer {
+	svr := new(Server)
+	svr.Validate = v
+	svr.MessageQueue = mq
+	return svr
 }

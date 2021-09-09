@@ -10,7 +10,7 @@ services:
       on-failure
       # Set environment variables
     environment:
-      PORT: "5005"
+      WEBHOOK_PORT: "3000"
     networks:
       - intranet
     depends_on:

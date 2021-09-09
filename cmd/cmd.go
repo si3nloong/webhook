@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 
@@ -20,6 +19,19 @@ type Config struct {
 		Enabled bool   `mapstructure:"enabled"`
 		Port    string `mapstructure:"port" validate:"numeric"`
 	} `mapstructure:"grpc"`
+	MessageQueue struct {
+		Redis struct {
+			Cluster bool   `mapstructure:"cluster"`
+			Addr    string `mapstructure:"addr"`
+		} `mapstructure:"redis"`
+		NATS struct {
+			JetStream bool   `mapstructure:"js"`
+			Subject   string `mapstructure:"subject"`
+			Queue     string `mapstructure:"queue"`
+		} `mapstructure:"nats"`
+		NSQ struct {
+		} `mapstructure:"nsq"`
+	} `mapstructure:"message_queue"`
 }
 
 func (c *Config) SetDefault() {
@@ -27,6 +39,8 @@ func (c *Config) SetDefault() {
 	c.Enabled = true
 	c.Port = "3000"
 	c.GRPC.Port = "9000"
+	c.MessageQueue.Redis.Addr = "localhost:6379"
+	c.MessageQueue.NATS.JetStream = true
 }
 
 func init() {
@@ -48,7 +62,7 @@ func init() {
 	// viper.SetDefault("CURLHOOK_REDIS_CLUSTER", false)
 	// viper.SetDefault("grpc.")
 
-	log.Println(cfgFile)
+	// log.Println(cfgFile)
 	// rootCmd.AddCommand(addCmd)
 	// rootCmd.AddCommand(initCmd)
 }

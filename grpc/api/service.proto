@@ -36,7 +36,7 @@ message SendWebhookRequest {
   // @gotags: validate:"required,url,max=1000"
   string url = 2;
   map<string, string> headers = 3;
-  // @gotags: validate:"max=1024"
+  // @gotags: validate:"max=2048"
   string body = 4;
   // @gotags: validate:"lte=10"
   uint32 retry = 5;

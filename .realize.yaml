@@ -6,10 +6,10 @@ schema:
 - name: go-webhook
   path: .
   env:
-    CURLHOOK_REDIS_CLUSTER: true
-    CURLHOOK_REDIS_HOST: "localhost"
-    CURLHOOK_REDIS_PORT: "6379"
-    CURLHOOK_REDIS_PASSWORD: ""
+    WEBHOOK_MESSAGE_QUEUE_REDIS_CLUSTER: true
+    WEBHOOK_MESSAGE_QUEUE_REDIS_HOST: "localhost"
+    WEBHOOK_MESSAGE_QUEUE_REDIS_PORT: "6379"
+    WEBHOOK_MESSAGE_QUEUE_REDIS_PASSWORD: ""
   commands:
     install:
       status: true

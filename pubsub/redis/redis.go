@@ -5,7 +5,16 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
+	pb "github.com/si3nloong/webhook/grpc/proto"
 )
+
+type messageQueue struct {
+	redis redis.Cmdable
+}
+
+func (m *messageQueue) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
+	return nil
+}
 
 func ExampleClient() {
 	var ctx = context.Background()

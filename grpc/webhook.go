@@ -13,7 +13,7 @@ func (s *Server) SendWebhook(ctx context.Context, req *proto.SendWebhookRequest)
 	}
 
 	// push to nats
-	if err := s.mq.Publish(ctx, req); err != nil {
+	if err := s.Publish(ctx, req); err != nil {
 		return nil, status.Convert(err).Err()
 	}
 

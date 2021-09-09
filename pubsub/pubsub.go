@@ -7,5 +7,7 @@ import (
 )
 
 type MessageQueue interface {
-	Publish(context.Context, *proto.SendWebhookRequest) error
+	// Subscribe(worker uint, cb func())
+	Publish(ctx context.Context, req *proto.SendWebhookRequest) error
+	GracefulStop() error
 }

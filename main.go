@@ -33,10 +33,23 @@ func main() {
 		panic(err)
 	}
 
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
 	viper.AddConfigPath(pwd)
+
+	viper.SetEnvPrefix("WEBHOOK")
+	viper.AutomaticEnv()
+
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
+	log.Println("config =>", viper.ConfigFileUsed())
+
+	// viper.SetConfigType("env")
+	// if err := viper.ReadInConfig(); err == nil {
+	// 	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	// }
 
 	v := validator.New()
 	cfg := cmd.Config{}
@@ -45,20 +58,25 @@ func main() {
 		panic(err)
 	}
 
+	// validate yaml value
 	if err := v.StructCtx(ctx, cfg); err != nil {
 		panic(err)
 	}
 
-	// testing
-	if err := sendWebhook(&cfg, &proto.SendWebhookRequest{}); err != nil {
-		log.Fatal(err)
-	}
+	log.Println("cluster =>", cfg.MessageQueue.Redis.Cluster)
+
+	// setup message queuing
+	var (
+		mq         = nats.New(&cfg)
+		grpcServer *grpc.Server
+	)
 
 	if cfg.Enabled {
 		go func() {
-			svr := rest.NewServer(v)
+			svr := rest.NewServer(mq, v)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
+			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
 			log.Printf("RESTful serve at %s", cfg.Port)
 
 			if err := fasthttp.ListenAndServe(":"+cfg.Port, httpServer.Handler); err != nil {
@@ -68,12 +86,12 @@ func main() {
 		}()
 	}
 
-	grpcServer := grpc.NewServer()
-
 	if cfg.GRPC.Enabled {
-		pbc := nats.New()
-		proto.RegisterCurlHookServiceServer(grpcServer, rpc.NewServer(v, pbc))
+		grpcServer = grpc.NewServer()
+
 		go func() {
+			svr := rpc.NewServer(mq, v)
+			proto.RegisterCurlHookServiceServer(grpcServer, svr)
 			lis, err := net.Listen("tcp", ":"+cfg.GRPC.Port)
 			if err != nil {
 				panic(err)
@@ -81,7 +99,7 @@ func main() {
 
 			log.Printf("gRPC serve at %s", cfg.GRPC.Port)
 			if err := grpcServer.Serve(lis); err != nil {
-				log.Fatalf("failed to serve: %s", err)
+				panic(err)
 			}
 		}()
 	}
@@ -89,7 +107,9 @@ func main() {
 	select {
 	case v := <-quit:
 		log.Println("Quit", v)
-		grpcServer.GracefulStop()
+		if grpcServer != nil {
+			grpcServer.GracefulStop()
+		}
 		// s.log.Errorf("signal.Notify: %v", v)
 	case done := <-ctx.Done():
 		log.Println("ctx.Done: %v", done)
