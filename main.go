@@ -11,11 +11,12 @@ import (
 
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
+	"github.com/go-redis/redis/v8"
 	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
 	"github.com/si3nloong/webhook/grpc/proto"
 	rest "github.com/si3nloong/webhook/http"
-	"github.com/si3nloong/webhook/pubsub/nats"
+	"github.com/si3nloong/webhook/pubsub"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -23,11 +24,18 @@ import (
 
 func main() {
 
-	quit := make(chan os.Signal, 1)
+	var (
+		mq         pubsub.MessageQueue
+		grpcServer *grpc.Server
+		quit       = make(chan os.Signal, 1)
+		v          = validator.New()
+	)
+
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// get current path
 	pwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -46,14 +54,10 @@ func main() {
 
 	log.Println("config =>", viper.ConfigFileUsed())
 
-	// viper.SetConfigType("env")
-	// if err := viper.ReadInConfig(); err == nil {
-	// 	fmt.Println("Using config file:", viper.ConfigFileUsed())
-	// }
-
-	v := validator.New()
 	cfg := cmd.Config{}
+	// set the default value for configuration
 	cfg.SetDefault()
+	// read config into struct
 	if err := viper.Unmarshal(&cfg); err != nil {
 		panic(err)
 	}
@@ -63,14 +67,25 @@ func main() {
 		panic(err)
 	}
 
+	redis := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	if err := redis.Ping(ctx).Err(); err != nil {
+		panic(err)
+	}
+
 	log.Println("cluster =>", cfg.MessageQueue.Redis.Cluster)
 
 	// setup message queuing
-	var (
-		mq         = nats.New(&cfg)
-		grpcServer *grpc.Server
-	)
+	switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
+	case cmd.MessageQueueEngineRedis:
+	case cmd.MessageQueueEngineNSQ:
+	case cmd.MessageQueueEngineNats:
 
+	}
+
+	// serve http
 	if cfg.Enabled {
 		go func() {
 			svr := rest.NewServer(mq, v)
@@ -86,6 +101,7 @@ func main() {
 		}()
 	}
 
+	// serve gRPC
 	if cfg.GRPC.Enabled {
 		grpcServer = grpc.NewServer()
 
@@ -105,14 +121,14 @@ func main() {
 	}
 
 	select {
-	case v := <-quit:
-		log.Println("Quit", v)
+	case <-quit:
+		// close gRPC server if it's exists
 		if grpcServer != nil {
 			grpcServer.GracefulStop()
 		}
-		// s.log.Errorf("signal.Notify: %v", v)
+
 	case done := <-ctx.Done():
-		log.Println("ctx.Done: %v", done)
+		log.Println("ctx.Done: ", done)
 	}
 
 }

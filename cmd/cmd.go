@@ -9,6 +9,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+type MessageQueueEngine string
+
+const (
+	MessageQueueEngineRedis MessageQueueEngine = "redis"
+	MessageQueueEngineNats  MessageQueueEngine = "nats"
+	MessageQueueEngineNSQ   MessageQueueEngine = "nsq"
+)
+
 type Config struct {
 	Enabled        bool   `mapstructure:"enabled"`
 	Port           string `mapstructure:"port" validate:"numeric"`
@@ -20,9 +28,11 @@ type Config struct {
 		Port    string `mapstructure:"port" validate:"numeric"`
 	} `mapstructure:"grpc"`
 	MessageQueue struct {
-		Redis struct {
-			Cluster bool   `mapstructure:"cluster"`
-			Addr    string `mapstructure:"addr"`
+		Engine string `mapstructure:"engine" validate:"oneof=redis nats nsq"`
+		Redis  struct {
+			Cluster  bool   `mapstructure:"cluster"`
+			Addr     string `mapstructure:"addr"`
+			Password string `mapstructure:"password"`
 		} `mapstructure:"redis"`
 		NATS struct {
 			JetStream bool   `mapstructure:"js"`

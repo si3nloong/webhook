@@ -10,6 +10,11 @@ grpc:
   port: 9000
 
 message_queue:
+  engine: "redis"
+  redis:
+    cluster: false
+    addr: "localhost:6379"
+    password: ""
   nats:
     js: true
     stream: "webhook"
