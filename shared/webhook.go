@@ -1,20 +1,22 @@
-package main
+package shared
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"time"
 
 	"github.com/avast/retry-go/v3"
-	"github.com/si3nloong/webhook/cmd"
 	pb "github.com/si3nloong/webhook/grpc/proto"
+
 	"github.com/valyala/fasthttp"
 )
 
-func sendWebhook(cfg *cmd.Config, req *pb.SendWebhookRequest) error {
-	retry.Do(
+type WebhookServer struct {
+}
+
+func (ws *WebhookServer) SendWebhook(req *pb.SendWebhookRequest) error {
+	err := retry.Do(
 		func() error {
 			httpReq := fasthttp.AcquireRequest()
 			httpResp := fasthttp.AcquireResponse()
@@ -56,19 +58,25 @@ func sendWebhook(cfg *cmd.Config, req *pb.SendWebhookRequest) error {
 			} else if statusCode >= fasthttp.StatusBadRequest {
 				return errors.New("")
 			}
+
 			return nil
 		},
 		retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
-			fmt.Println("Server fails with: " + err.Error())
-			// if retriable, ok := err.(*retry.RetriableError); ok {
-			// 	fmt.Printf("Client follows server recommendation to retry after %v\n", retriable.RetryAfter)
-			// 	return retriable.RetryAfter
-			// }
-			// apply a default exponential back off strategy
+			log.Println("backoff retrying")
+			log.Println(n, err, config)
+			// 			fmt.Println("Server fails with: " + err.Error())
+			// 			// if retriable, ok := err.(*retry.RetriableError); ok {
+			// 			// 	fmt.Printf("Client follows server recommendation to retry after %v\n", retriable.RetryAfter)
+			// 			// 	return retriable.RetryAfter
+			// 			// }
+			// 			// apply a default exponential back off strategy
 			return retry.BackOffDelay(n, err, config)
 		}),
-		retry.Attempts(cfg.Retry),
+		retry.Attempts(uint(req.Retry)),
 	)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

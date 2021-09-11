@@ -17,5 +17,6 @@ require (
 require (
 	github.com/adjust/rmq/v4 v4.0.1
 	github.com/avast/retry-go/v3 v3.1.1
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
 )

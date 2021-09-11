@@ -23,7 +23,7 @@ type messageQueue struct {
 	subs []*nats.Subscription
 }
 
-func New(cfg *cmd.Config) *messageQueue {
+func New(cfg cmd.Config) *messageQueue {
 	q := new(messageQueue)
 
 	// Connect to NATS
@@ -62,7 +62,7 @@ func New(cfg *cmd.Config) *messageQueue {
 	}
 
 	for i := 0; i < cfg.NoOfWorker; i++ {
-
+		q.subs = append(q.subs)
 	}
 
 	{
