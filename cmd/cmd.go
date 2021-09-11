@@ -40,9 +40,7 @@ type Config struct {
 			DB       int    `mapstructure:"db"`
 		} `mapstructure:"redis"`
 		NATS struct {
-			JetStream bool   `mapstructure:"js"`
-			Subject   string `mapstructure:"subject"`
-			Queue     string `mapstructure:"queue"`
+			JetStream bool `mapstructure:"js"`
 		} `mapstructure:"nats"`
 		NSQ struct {
 		} `mapstructure:"nsq"`

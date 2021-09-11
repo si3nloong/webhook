@@ -1,17 +1,17 @@
+# HTTP server
 enabled: true
 port: 3000
-retry: 10
-retry_mechanism: "backoff"
 no_of_worker: 2
 max_pending_webhook: 10000
 
+# gRPC server
 grpc:
   enabled: true # enable gRPC server
   api_key: "abcd"
   port: 9000
 
 message_queue:
-  engine: "redis"
+  engine: "redis" # possible value is redis, nats, nsq
   topic: "webhook"
   queue_group: "webhook"
   redis:
@@ -20,6 +20,6 @@ message_queue:
     password: ""
     db: 1
   nats:
-    js: true
+    js: true # indicate whether use jetstream or not
     stream: "webhook"
     queue: "webhook"
