@@ -5,8 +5,8 @@ import (
 	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/si3nloong/webhook/cmd"
 	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/internal/shared"
 	"github.com/si3nloong/webhook/pubsub"
-	"github.com/si3nloong/webhook/shared"
 	"google.golang.org/grpc"
 )
 
