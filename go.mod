@@ -9,12 +9,14 @@ require (
 	github.com/nats-io/nats.go v1.12.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
-	github.com/valyala/fasthttp v1.29.0
-	google.golang.org/grpc v1.38.0
+	github.com/valyala/fasthttp v1.30.0
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 )
 
 require (
+	github.com/adjust/rmq/v4 v4.0.1
 	github.com/avast/retry-go/v3 v3.1.1
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
 )

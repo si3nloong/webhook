@@ -5,32 +5,38 @@ import (
 	"log"
 	"net"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go/v3"
 	"github.com/nats-io/nats.go"
+	"github.com/si3nloong/webhook/cmd"
 	pb "github.com/si3nloong/webhook/grpc/proto"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/protobuf/proto"
 )
 
-type Client struct {
+type messageQueue struct {
+	sync.RWMutex
 	subj string
 	js   nats.JetStreamContext
+	subs []*nats.Subscription
 }
 
-func New() *Client {
+func New(cfg cmd.Config) *messageQueue {
+	q := new(messageQueue)
+
 	// Connect to NATS
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := handleMessage(&pb.SendWebhookRequest{
-		Url: "https://183jkashdkjhasjkdh.com",
-	}); err != nil {
-		panic(err)
-	}
+	// if err := handleMessage(&pb.SendWebhookRequest{
+	// 	Url: "https://183jkashdkjhasjkdh.com",
+	// }); err != nil {
+	// 	panic(err)
+	// }
 
 	log.Println(nc.Statistics)
 
@@ -55,30 +61,15 @@ func New() *Client {
 		panic(err)
 	}
 
+	for i := 0; i < cfg.NoOfWorker; i++ {
+		q.subs = append(q.subs)
+	}
+
 	{
 		sub, err := js.QueueSubscribe(
 			"test",
 			"webhook1",
-			func(msg *nats.Msg) {
-				log.Println("Handle message ========>")
-				log.Println(string(msg.Data))
-				// log.Println(msg)
-				req := new(pb.SendWebhookRequest)
-
-				if err := proto.Unmarshal(msg.Data, req); err != nil {
-					log.Println(err)
-					return
-				}
-
-				if err := handleMessage(req); err != nil {
-					log.Println(err)
-					// msg.Nak()
-					return
-				}
-
-				// if everything ok, acknowledge and don't retry
-				msg.Ack()
-			},
+			q.onQueueSubscribe,
 			nats.ManualAck(),
 			nats.AckWait(10*time.Second),
 			nats.MaxDeliver(10),
@@ -87,26 +78,30 @@ func New() *Client {
 		log.Println("Subscription =>", sub, err)
 	}
 
-	// go func() {
-	// 	for i := 0; i < 10; i++ {
-	// 		ack, err := js.Publish("test", []byte("hello world!"))
-	// 		log.Println(ack, err)
-	// 	}
-	// }()
+	q.js = js
 
-	// stan.AckWait(20 * time.Second)
-	// sc.QueueSubscribe(
-	// 	"webhook",
-	// 	"webhook",
-	// 	func(msg *stan.Msg) {},
-	// 	stan.AckWait(5*time.Second),
-	// 	stan.DurableName("webhook"),
-	// 	stan.MaxInflight(5),
-	// )
-	return &Client{
-		js:   js,
-		subj: "test",
+	return q
+}
+
+func (mq *messageQueue) onQueueSubscribe(msg *nats.Msg) {
+	log.Println("Handle message ========>")
+	log.Println(string(msg.Data))
+	// log.Println(msg)
+	req := new(pb.SendWebhookRequest)
+
+	if err := proto.Unmarshal(msg.Data, req); err != nil {
+		log.Println(err)
+		return
 	}
+
+	if err := handleMessage(req); err != nil {
+		log.Println(err)
+		// msg.Nak()
+		return
+	}
+
+	// if everything ok, acknowledge and don't retry
+	msg.Ack()
 }
 
 func handleMessage(req *pb.SendWebhookRequest) error {
@@ -156,5 +151,10 @@ func handleMessage(req *pb.SendWebhookRequest) error {
 	} else if statusCode >= fasthttp.StatusBadRequest {
 	}
 
+	return nil
+}
+
+func (q *messageQueue) GracefulStop() error {
+	// return q.
 	return nil
 }

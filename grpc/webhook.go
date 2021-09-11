@@ -12,8 +12,8 @@ func (s *Server) SendWebhook(ctx context.Context, req *proto.SendWebhookRequest)
 		return nil, status.Convert(err).Err()
 	}
 
-	// push to nats
-	if err := s.mq.Publish(ctx, req); err != nil {
+	// push to message queue
+	if err := s.Publish(ctx, req); err != nil {
 		return nil, status.Convert(err).Err()
 	}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -11,11 +10,14 @@ import (
 
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
+
 	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
-	"github.com/si3nloong/webhook/grpc/proto"
 	rest "github.com/si3nloong/webhook/http"
+	"github.com/si3nloong/webhook/pubsub"
 	"github.com/si3nloong/webhook/pubsub/nats"
+	"github.com/si3nloong/webhook/pubsub/redis"
+	"github.com/si3nloong/webhook/util"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -23,76 +25,102 @@ import (
 
 func main() {
 
-	quit := make(chan os.Signal, 1)
+	var (
+		mq      pubsub.MessageQueue
+		grpcSvr *grpc.Server
+		quit    = make(chan os.Signal, 1)
+		v       = validator.New()
+		cfg     = cmd.Config{}
+	)
+
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// get current path
 	pwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 
 	viper.AddConfigPath(pwd)
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+
+	viper.SetEnvPrefix("webhook")
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
 	}
 
-	v := validator.New()
-	cfg := cmd.Config{}
+	// log.Println("config =>", viper.ConfigFileUsed())
+
+	// set the default value for configuration
 	cfg.SetDefault()
+	// read config into struct
 	if err := viper.Unmarshal(&cfg); err != nil {
 		panic(err)
 	}
 
+	// validate yaml value
 	if err := v.StructCtx(ctx, cfg); err != nil {
 		panic(err)
 	}
 
-	// testing
-	if err := sendWebhook(&cfg, &proto.SendWebhookRequest{}); err != nil {
-		log.Fatal(err)
+	// setup message queuing
+	switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
+	case cmd.MessageQueueEngineRedis:
+		mq = redis.New(cfg)
+	case cmd.MessageQueueEngineNats:
+		mq = nats.New(cfg)
+	// case cmd.MessageQueueEngineNSQ:
+	// 	mq = redis.New(ctx, cfg)
+	default:
 	}
 
+	// serve http
 	if cfg.Enabled {
 		go func() {
-			svr := rest.NewServer(v)
+			svr := rest.NewServer(mq, v)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
-			log.Printf("RESTful serve at %s", cfg.Port)
+			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
+			log.Printf("HTTP/RESTful server serve at %v", cfg.Port)
 
-			if err := fasthttp.ListenAndServe(":"+cfg.Port, httpServer.Handler); err != nil {
+			if err := fasthttp.ListenAndServe(util.FormatPort(cfg.Port), httpServer.Handler); err != nil {
 				defer cancel()
 				panic(err)
 			}
 		}()
 	}
 
-	grpcServer := grpc.NewServer()
-
+	// serve gRPC
 	if cfg.GRPC.Enabled {
-		pbc := nats.New()
-		proto.RegisterCurlHookServiceServer(grpcServer, rpc.NewServer(v, pbc))
+		grpcSvr = rpc.NewServer(cfg, mq, v)
+
 		go func() {
-			lis, err := net.Listen("tcp", ":"+cfg.GRPC.Port)
+			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))
 			if err != nil {
 				panic(err)
 			}
 
-			log.Printf("gRPC serve at %s", cfg.GRPC.Port)
-			if err := grpcServer.Serve(lis); err != nil {
-				log.Fatalf("failed to serve: %s", err)
+			log.Printf("gRPC server serve at %v", cfg.GRPC.Port)
+			if err := grpcSvr.Serve(lis); err != nil {
+				panic(err)
 			}
 		}()
 	}
 
 	select {
-	case v := <-quit:
-		log.Println("Quit", v)
-		grpcServer.GracefulStop()
-		// s.log.Errorf("signal.Notify: %v", v)
+	case <-quit:
+		// close gRPC server if it's exists
+		if grpcSvr != nil {
+			grpcSvr.GracefulStop()
+		}
+
 	case done := <-ctx.Done():
-		log.Println("ctx.Done: %v", done)
+		log.Println("ctx.Done: ", done)
 	}
 
 }

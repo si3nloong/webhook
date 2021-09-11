@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 
@@ -10,23 +9,51 @@ import (
 	"github.com/spf13/viper"
 )
 
+type MessageQueueEngine string
+
+const (
+	MessageQueueEngineRedis MessageQueueEngine = "redis"
+	MessageQueueEngineNats  MessageQueueEngine = "nats"
+	MessageQueueEngineNSQ   MessageQueueEngine = "nsq"
+)
+
 type Config struct {
 	Enabled        bool   `mapstructure:"enabled"`
-	Port           string `mapstructure:"port" validate:"numeric"`
+	Port           int    `mapstructure:"port" validate:"numeric"`
 	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
-	RetryMechanism string `mapstructure:"retry_mechanism" validate:""`
-	NoOfWorker     int    `mapstructure:"no_of_worker"`
+	RetryMechanism string `mapstructure:"retry_mechanism"`
+	NoOfWorker     int    `mapstructure:"no_of_worker" validate:"required,lte=100"`
 	GRPC           struct {
 		Enabled bool   `mapstructure:"enabled"`
-		Port    string `mapstructure:"port" validate:"numeric"`
+		ApiKey  string `mapstructure:"api_key"`
+		Port    int    `mapstructure:"port" validate:"numeric"`
 	} `mapstructure:"grpc"`
+	MessageQueue struct {
+		Engine     string `mapstructure:"engine" validate:"oneof=redis nats nsq"`
+		Topic      string `mapstructure:"topic" validate:"alphanum"`
+		QueueGroup string `mapstructure:"queue_group" validate:"alphanum"`
+		Redis      struct {
+			Cluster  bool   `mapstructure:"cluster"`
+			Addr     string `mapstructure:"addr"`
+			Username string `mapstructure:"username"`
+			Password string `mapstructure:"password"`
+			DB       int    `mapstructure:"db"`
+		} `mapstructure:"redis"`
+		NATS struct {
+			JetStream bool `mapstructure:"js"`
+		} `mapstructure:"nats"`
+		NSQ struct {
+		} `mapstructure:"nsq"`
+	} `mapstructure:"message_queue"`
 }
 
 func (c *Config) SetDefault() {
 	c.NoOfWorker = runtime.NumCPU()
 	c.Enabled = true
-	c.Port = "3000"
-	c.GRPC.Port = "9000"
+	c.Port = 3000
+	c.GRPC.Port = 9000
+	c.MessageQueue.Redis.Addr = "localhost:6379"
+	c.MessageQueue.NATS.JetStream = true
 }
 
 func init() {
@@ -48,7 +75,7 @@ func init() {
 	// viper.SetDefault("CURLHOOK_REDIS_CLUSTER", false)
 	// viper.SetDefault("grpc.")
 
-	log.Println(cfgFile)
+	// log.Println(cfgFile)
 	// rootCmd.AddCommand(addCmd)
 	// rootCmd.AddCommand(initCmd)
 }

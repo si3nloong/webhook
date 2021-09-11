@@ -1,4 +1,4 @@
-generate-protobuf:
+proto:
 	@rm -rf ./grpc/proto/* && \
 	protoc --proto_path=./grpc/api \
 	--go_out=./grpc/proto --go_opt=paths=source_relative \
