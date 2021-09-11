@@ -14,10 +14,11 @@ import (
 	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
 	rest "github.com/si3nloong/webhook/http"
+	"github.com/si3nloong/webhook/internal/shared"
+	"github.com/si3nloong/webhook/internal/util"
 	"github.com/si3nloong/webhook/pubsub"
 	"github.com/si3nloong/webhook/pubsub/nats"
 	"github.com/si3nloong/webhook/pubsub/redis"
-	"github.com/si3nloong/webhook/util"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -68,6 +69,10 @@ func main() {
 		panic(err)
 	}
 
+	ws := new(shared.WebhookServer)
+
+	log.Println(ws)
+
 	// setup message queuing
 	switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
 	case cmd.MessageQueueEngineRedis:
@@ -79,7 +84,7 @@ func main() {
 	default:
 	}
 
-	// serve http
+	// serve HTTP
 	if cfg.Enabled {
 		go func() {
 			svr := rest.NewServer(mq, v)

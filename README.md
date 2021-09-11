@@ -2,6 +2,12 @@
 
 > A golang webhook server comply with at least once deliver.
 
+[![Build](https://github.com/si3nloong/webhook/workflows/build/badge.svg?branch=master)](https://github.com/si3nloong/webhook/actions?query=workflow%3Abuild)
+[![Release](https://img.shields.io/github/v/tag/si3nloong/webhook)](https://github.com/si3nloong/webhook/releases)
+[![Go Report](https://goreportcard.com/badge/github.com/si3nloong/webhook)](https://goreportcard.com/report/github.com/si3nloong/webhook)
+[![Go Coverage](https://codecov.io/gh/si3nloong/webhook/branch/master/graph/badge.svg)](https://codecov.io/gh/si3nloong/webhook)
+[![LICENSE](https://img.shields.io/github/license/si3nloong/webhook)](https://github.com/si3nloong/webhook/blob/master/LICENSE)
+
 ## üî® Installation
 
 ```bash
@@ -72,6 +78,6 @@ Thanks to these awesome companies for their support of Open Source developers ‚ù
 
 ## License
 
-Copyright 2019 SianLoong
+Copyright 2021 SianLoong
 
-Licensed under the MIT License.
+Licensed under the [MIT License](/LICENSE).
