@@ -1,9 +1,15 @@
 FROM golang:1.17-alpine as golang
 
+ADD . /go/app
+
+WORKDIR  /go/app
+
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o main ./main.go 
+
 FROM alpine:latest
 
 COPY --from=golang /usr/local/go/lib/time/zoneinfo.zip /
-COPY --from=golang /app/main /app/main
+COPY --from=golang /go/app/main /app/main
 
 ENV ZONEINFO=/zoneinfo.zip
 

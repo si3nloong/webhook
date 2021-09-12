@@ -8,9 +8,6 @@ service CurlHookService {
   rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
   rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
   rpc SendWebhook(SendWebhookRequest) returns (SendWebhookResponse);
-  // rpc Authorization(AuthorizationRequest) returns (AuthorizationResponse){}
-  // rpc AccessToken(AccessTokenRequest) returns (AccessTokenResponse){}
-  // rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse){}
 }
 
 message HealthCheckRequest {
@@ -40,7 +37,12 @@ message SendWebhookRequest {
   string body = 4;
   // @gotags: validate:"lte=10"
   uint32 retry = 5;
-  uint32 timeout = 6;
+  enum RetryMechanism {
+    BACKOFF = 0;
+    LINEAR = 1;
+  }
+  RetryMechanism retryMechanism = 6;
+  uint32 timeout = 7;
 }
 
 message SendWebhookResponse {
