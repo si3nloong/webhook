@@ -2,7 +2,7 @@
 
 > A golang webhook server comply with at least once deliver.
 
-[![Build](https://github.com/si3nloong/webhook/workflows/build/badge.svg?branch=master)](https://github.com/si3nloong/webhook/actions?query=workflow%3Abuild)
+[![Build](https://github.com/si3nloong/webhook/workflows/Testing/badge.svg?branch=master)](https://github.com/si3nloong/webhook/actions/workflows/test.yml)
 [![Release](https://img.shields.io/github/v/tag/si3nloong/webhook)](https://github.com/si3nloong/webhook/releases)
 [![Go Report](https://goreportcard.com/badge/github.com/si3nloong/webhook)](https://goreportcard.com/report/github.com/si3nloong/webhook)
 [![Go Coverage](https://codecov.io/gh/si3nloong/webhook/branch/master/graph/badge.svg)](https://codecov.io/gh/si3nloong/webhook)
