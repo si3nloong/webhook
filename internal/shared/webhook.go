@@ -10,12 +10,9 @@ import (
 
 	"github.com/avast/retry-go/v3"
 	"github.com/go-playground/validator/v10"
-	"github.com/go-redis/redis/v8"
 	"github.com/segmentio/ksuid"
 	"github.com/si3nloong/webhook/cmd"
 	pb "github.com/si3nloong/webhook/grpc/proto"
-	"github.com/si3nloong/webhook/metric"
-	mt "github.com/si3nloong/webhook/metric/redis"
 	"github.com/si3nloong/webhook/pubsub"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,7 +35,6 @@ type WebhookServer interface {
 type app struct {
 	*validator.Validate
 	pubsub.MessageQueue
-	metric.Stat
 	db *sql.DB
 }
 
@@ -47,7 +43,7 @@ func NewServer(cfg cmd.Config) WebhookServer {
 		svr = new(app)
 		err error
 	)
-	svr.Stat = mt.NewMetricServerWithRedisClient(redis.NewClient(&redis.Options{}))
+	// svr.Stat = mt.NewMetricServerWithRedisClient(redis.NewClient(&redis.Options{}))
 	svr.db, err = sql.Open("mysql", "root:abcd1234@/webhook")
 	if err != nil {
 		panic(err)
@@ -144,9 +140,9 @@ func (s app) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error 
 		return err
 	}
 
-	if err := s.Incr(ctx, metric.StatTypeSucceed); err != nil {
-		return err
-	}
+	// if err := s.Incr(ctx, metric.StatTypeSucceed); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
