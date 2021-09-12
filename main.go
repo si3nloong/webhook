@@ -13,6 +13,7 @@ import (
 
 	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
+	"github.com/si3nloong/webhook/grpc/proto"
 	rest "github.com/si3nloong/webhook/http"
 	"github.com/si3nloong/webhook/internal/shared"
 	"github.com/si3nloong/webhook/internal/util"
@@ -69,7 +70,15 @@ func main() {
 		panic(err)
 	}
 
-	ws := new(shared.WebhookServer)
+	ws := shared.NewServer(cfg)
+	if err := ws.SendWebhook(ctx, &proto.SendWebhookRequest{
+		Method:  proto.SendWebhookRequest_POST,
+		Url:     "https://sb-api.wetix.my",
+		Headers: nil,
+		Retry:   1,
+	}); err != nil {
+		log.Fatal(err)
+	}
 
 	log.Println(ws)
 
@@ -79,7 +88,7 @@ func main() {
 		mq = redis.New(cfg)
 	case cmd.MessageQueueEngineNats:
 		mq = nats.New(cfg)
-	// case cmd.MessageQueueEngineNSQ:
+	case cmd.MessageQueueEngineNSQ:
 	// 	mq = redis.New(ctx, cfg)
 	default:
 	}

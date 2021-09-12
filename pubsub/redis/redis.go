@@ -55,12 +55,15 @@ func New(cfg cmd.Config) *messageQueue {
 		panic(err)
 	}
 
-	if err := q.StartConsuming(3, 5*time.Second); err != nil {
+	if err := q.StartConsuming(3, 3*time.Second); err != nil {
 		panic(err)
 	}
 
 	for i := 0; i < cfg.NoOfWorker; i++ {
 		name, err := q.AddConsumerFunc(cfg.MessageQueue.QueueGroup, func(d rmq.Delivery) {
+			log.Println("Consumer ", i)
+			log.Println(d.Payload())
+
 			req := new(pb.SendWebhookRequest)
 			if err := proto.Unmarshal([]byte(d.Payload()), req); err != nil {
 				return

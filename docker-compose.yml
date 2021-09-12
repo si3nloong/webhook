@@ -6,21 +6,20 @@ services:
       context: .
       # Define the Dockerfile we going to use
       dockerfile: ./Dockerfile
-    restart:
-      on-failure
+    restart: on-failure
       # Set environment variables
     environment:
       WEBHOOK_PORT: "3000"
     networks:
       - intranet
     depends_on:
-      # - mongodb
+      - redis
       - jetstream
     links: # Link to containers in another service
-      # - mongodb
+      - redis
       - jetstream
     ports:
-      - "8081:8081"
+      - "8080:8080"
 
   # Define the `jetstream` service
   jetstream:
@@ -38,6 +37,9 @@ services:
   # Define the `redis` service
   redis:
     image: "redis:alpine"
+    restart: on-failure
+    networks:
+      - intranet
 
 volumes:
   jsm: {}
