@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	github.com/adjust/rmq/v4 v4.0.0
+	github.com/adjust/rmq/v4 v4.0.1
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
