@@ -10,9 +10,8 @@ import (
 
 func (s *Server) SendWebhook(ctx *fasthttp.RequestCtx) {
 	var i struct {
-		// CUrl    string            `json:"curl" validate:"omitempty,required"`
 		URL     string            `json:"url" validate:"required,url,max=1000"`
-		Method  string            `json:"method" validate:"oneof=GET POST"`
+		Method  string            `json:"method" validate:"oneof=GET POST PATCH PUT DELETE"`
 		Body    string            `json:"body" validate:"max=2048"`
 		Headers map[string]string `json:"headers"`
 	}
@@ -27,10 +26,13 @@ func (s *Server) SendWebhook(ctx *fasthttp.RequestCtx) {
 	req := new(proto.SendWebhookRequest)
 	req.Url = i.URL
 	switch i.Method {
-	case "GET":
+	case fasthttp.MethodGet:
 		req.Method = proto.SendWebhookRequest_GET
-	case "POST":
+	case fasthttp.MethodPost:
 		req.Method = proto.SendWebhookRequest_POST
+	case fasthttp.MethodPatch:
+	case fasthttp.MethodPut:
+	case fasthttp.MethodDelete:
 	}
 	req.Body = i.Body
 	req.Headers = i.Headers

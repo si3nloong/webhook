@@ -28,8 +28,6 @@ fire webhook ---> record stat (add success count or log error)
 
 type WebhookServer interface {
 	SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error
-	// IncrBy(ctx context.Context, value int64) error
-	// LogMessage(ctx context.Context, msg interface{}) error
 }
 
 type app struct {
@@ -158,8 +156,6 @@ func (s *app) LogError(
 	// 	return err
 	// }
 	// defer stmt.Close()
-
-	log.Println("LogError 2")
 	result, err := s.db.ExecContext(
 		ctx,
 		"INSERT INTO `ErrorLog` (`ID`,`Method`,`Error`) VALUES (?,?,?);",

@@ -5,8 +5,8 @@ on:
       - main
 
 jobs:
-  checkout:
-    name: Build Container
+  build-go:
+    name: Build Go
     runs-on: ubuntu-latest
     steps:
       - name: Inject slug/short variables
@@ -28,19 +28,21 @@ jobs:
             dep ensure
           fi
 
-  test-race:
-    needs: [ checkout ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Test
+      - name: Test Data Race
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-  codecov:
-    needs: [ checkout ]
-    runs-on: ubuntu-latest
-    steps:
       - name: Codecov
-        uses: codecov/codecov-action@v1.0.14
+        uses: codecov/codecov-action@v2.0.3
         with:
           token: ${{secrets.CODECOV_TOKEN}}
+
+  # codecov:
+  #   needs: [ checkout ]
+  #   name: Codecov
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Codecov
+  #       uses: codecov/codecov-action@v2.0.3
+  #       with:
+  #         token: ${{secrets.CODECOV_TOKEN}}
 

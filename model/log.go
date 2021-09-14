@@ -6,8 +6,8 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-// ErrorLog :
-type ErrorLog struct {
+// Log :
+type Log struct {
 	ID        ksuid.KSUID
 	Method    string
 	Error     string

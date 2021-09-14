@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -13,8 +14,7 @@ import (
 
 	"github.com/si3nloong/webhook/cmd"
 	rpc "github.com/si3nloong/webhook/grpc"
-	"github.com/si3nloong/webhook/grpc/proto"
-	rest "github.com/si3nloong/webhook/http"
+	rest "github.com/si3nloong/webhook/http/api"
 	"github.com/si3nloong/webhook/internal/shared"
 	"github.com/si3nloong/webhook/internal/util"
 	"github.com/si3nloong/webhook/pubsub"
@@ -30,9 +30,10 @@ func main() {
 	var (
 		mq      pubsub.MessageQueue
 		grpcSvr *grpc.Server
-		quit    = make(chan os.Signal, 1)
-		v       = validator.New()
-		cfg     = cmd.Config{}
+		// group   errgroup.Group
+		quit = make(chan os.Signal, 1)
+		v    = validator.New()
+		cfg  = cmd.Config{}
 	)
 
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -71,31 +72,26 @@ func main() {
 	}
 
 	ws := shared.NewServer(cfg)
-	if err := ws.SendWebhook(ctx, &proto.SendWebhookRequest{
-		Method:  proto.SendWebhookRequest_POST,
-		Url:     "https://sb-api.wetix.my",
-		Headers: nil,
-		Retry:   1,
-	}); err != nil {
-		log.Fatal(err)
-	}
 
+	// actually publisher and observer is the same client
 	log.Println(ws)
 
 	// setup message queuing
 	switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
 	case cmd.MessageQueueEngineRedis:
-		mq = redis.New(cfg)
+		mq, err = redis.New(cfg)
+		if err != nil {
+			panic(err)
+		}
 	case cmd.MessageQueueEngineNats:
 		mq = nats.New(cfg)
-	case cmd.MessageQueueEngineNSQ:
-	// 	mq = redis.New(ctx, cfg)
 	default:
+		panic(fmt.Sprintf("unsupported message queue engine %q", cfg.MessageQueue.Engine))
 	}
 
 	// serve HTTP
 	if cfg.Enabled {
-		go func() {
+		go func() error {
 			svr := rest.NewServer(mq, v)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
@@ -103,27 +99,43 @@ func main() {
 			log.Printf("HTTP/RESTful server serve at %v", cfg.Port)
 
 			if err := fasthttp.ListenAndServe(util.FormatPort(cfg.Port), httpServer.Handler); err != nil {
-				defer cancel()
-				panic(err)
+				return err
 			}
+
+			return nil
 		}()
 	}
 
+	log.Println("HERE")
+
 	// serve gRPC
 	if cfg.GRPC.Enabled {
+
+		log.Println("HERE 1")
 		grpcSvr = rpc.NewServer(cfg, mq, v)
 
-		go func() {
+		go func() error {
+			log.Println("HERE 333")
 			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))
 			if err != nil {
-				panic(err)
+				log.Println("HERE 1", err)
+				return err
 			}
+
+			log.Println("HERE 334")
 
 			log.Printf("gRPC server serve at %v", cfg.GRPC.Port)
 			if err := grpcSvr.Serve(lis); err != nil {
-				panic(err)
+				log.Println("HERE 1", err)
+				return err
 			}
+
+			log.Println("HERE 444")
+
+			return nil
 		}()
+
+		log.Println("HERE 2")
 	}
 
 	select {
@@ -132,9 +144,10 @@ func main() {
 		if grpcSvr != nil {
 			grpcSvr.GracefulStop()
 		}
+		log.Println("Quit")
 
-	case done := <-ctx.Done():
-		log.Println("ctx.Done: ", done)
+	case <-ctx.Done():
+		log.Println("ctx.Done!")
 	}
 
 }

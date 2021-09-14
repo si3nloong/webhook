@@ -1,9 +1,13 @@
 package redis
 
 import (
+	"log"
 	"time"
 
 	"github.com/adjust/rmq/v4"
+	pb "github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/pubsub"
+	"google.golang.org/protobuf/proto"
 )
 
 type taskConsumer struct {
@@ -11,6 +15,7 @@ type taskConsumer struct {
 	AutoAck       bool
 	AutoFinish    bool
 	SleepDuration time.Duration
+	cb            pubsub.ConsumerFunc
 
 	LastDelivery   rmq.Delivery
 	LastDeliveries []rmq.Delivery
@@ -18,9 +23,10 @@ type taskConsumer struct {
 	finish chan int
 }
 
-func NewTestConsumer(name string) rmq.Consumer {
+func newTaskConsumer(cb pubsub.ConsumerFunc) rmq.Consumer {
 	return &taskConsumer{
-		name:       name,
+		// name:       name,
+		cb:         cb,
 		AutoAck:    true,
 		AutoFinish: true,
 		finish:     make(chan int),
@@ -32,20 +38,34 @@ func (c *taskConsumer) String() string {
 }
 
 func (c *taskConsumer) Consume(delivery rmq.Delivery) {
-	c.LastDelivery = delivery
-	c.LastDeliveries = append(c.LastDeliveries, delivery)
+	req := new(pb.SendWebhookRequest)
+	log.Println("hERE 0")
+	if err := proto.Unmarshal([]byte(delivery.Payload()), req); err != nil {
+		return
+	}
 
-	if c.SleepDuration > 0 {
-		time.Sleep(c.SleepDuration)
+	log.Println("hERE 1")
+
+	if err := c.cb(req); err != nil {
+		return
 	}
-	if c.AutoAck {
-		if err := delivery.Ack(); err != nil {
-			panic(err)
-		}
-	}
-	if !c.AutoFinish {
-		<-c.finish
-	}
+
+	delivery.Ack()
+	// log.Println(delivery.Reject())
+	// c.LastDelivery = delivery
+	// c.LastDeliveries = append(c.LastDeliveries, delivery)
+
+	// if c.SleepDuration > 0 {
+	// 	time.Sleep(c.SleepDuration)
+	// }
+	// if c.AutoAck {
+	// 	if err := delivery.Ack(); err != nil {
+	// 		panic(err)
+	// 	}
+	// }
+	// if !c.AutoFinish {
+	// 	<-c.finish
+	// }
 }
 
 func (c *taskConsumer) Finish() {

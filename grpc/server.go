@@ -22,9 +22,9 @@ func NewServer(cfg cmd.Config, mq pubsub.MessageQueue, v *validator.Validate) *g
 	}
 
 	grpcServer := grpc.NewServer(opts...)
-	svr := new(Server)
+	svr := Server{}
 	svr.Validate = v
 	svr.MessageQueue = mq
-	proto.RegisterCurlHookServiceServer(grpcServer, svr)
+	proto.RegisterCurlHookServiceServer(grpcServer, &svr)
 	return grpcServer
 }

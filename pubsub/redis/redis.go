@@ -14,13 +14,16 @@ import (
 )
 
 type messageQueue struct {
-	err    chan error
-	client redis.Cmdable
-	conn   rmq.Connection
-	queue  rmq.Queue
+	config       cmd.Config
+	err          chan error
+	subsriptions []string
+	client       redis.Cmdable
+	conn         rmq.Connection
+	queue        rmq.Queue
+	cleaner      *rmq.Cleaner
 }
 
-func New(cfg cmd.Config) *messageQueue {
+func New(cfg cmd.Config) (*messageQueue, error) {
 	mq := new(messageQueue)
 	mq.err = make(chan error)
 
@@ -41,53 +44,59 @@ func New(cfg cmd.Config) *messageQueue {
 		mq.client = client
 	}
 
-	if err := mq.client.Ping(context.TODO()).Err(); err != nil {
-		panic(err)
+	if err := mq.client.Ping(context.Background()).Err(); err != nil {
+		return nil, err
 	}
 
 	conn, err := rmq.OpenConnectionWithRedisClient(cfg.MessageQueue.Topic, mq.client.(*redis.Client), mq.err)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	q, err := conn.OpenQueue(cfg.MessageQueue.QueueGroup)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if err := q.StartConsuming(3, 3*time.Second); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	for i := 0; i < cfg.NoOfWorker; i++ {
-		name, err := q.AddConsumerFunc(cfg.MessageQueue.QueueGroup, func(d rmq.Delivery) {
-			log.Println("Consumer ", i)
-			log.Println(d.Payload())
-
-			req := new(pb.SendWebhookRequest)
-			if err := proto.Unmarshal([]byte(d.Payload()), req); err != nil {
-				return
-			}
-		})
-		log.Println(name, err)
-	}
-
+	mq.cleaner = rmq.NewCleaner(conn)
 	mq.conn = conn
 	mq.queue = q
-	return mq
+	return mq, nil
 }
 
 func (mq *messageQueue) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
+	log.Println("publishing 0")
 	b, err := proto.Marshal(req)
 	if err != nil {
 		return err
 	}
+	log.Println("publishing 1")
 
 	if err := mq.queue.PublishBytes(b); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (mq *messageQueue) SubscribeOn(func()) {
+	for i := 0; i < mq.config.NoOfWorker; i++ {
+		name, err := mq.queue.AddConsumer(
+			mq.config.MessageQueue.QueueGroup,
+			newTaskConsumer(func(r *pb.SendWebhookRequest) error {
+				log.Println(r)
+				return nil
+			}),
+		)
+		if err != nil {
+			panic(err)
+		}
+		mq.subsriptions = append(mq.subsriptions, name)
+	}
 }
 
 func (mq *messageQueue) GracefulStop() error {
