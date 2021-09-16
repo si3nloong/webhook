@@ -23,7 +23,10 @@ type Config struct {
 	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
 	RetryMechanism string `mapstructure:"retry_mechanism"`
 	NoOfWorker     int    `mapstructure:"no_of_worker" validate:"required,lte=100"`
-	GRPC           struct {
+	DB             struct {
+		Engine string `mapstructure:"engine"`
+	} `mapstructure:"db"`
+	GRPC struct {
 		Enabled bool   `mapstructure:"enabled"`
 		ApiKey  string `mapstructure:"api_key"`
 		Port    int    `mapstructure:"port" validate:"numeric"`

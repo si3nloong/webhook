@@ -10,6 +10,10 @@ grpc:
   api_key: "abcd"
   port: 9000
 
+db:
+  engine: "elasticsearch"
+  connection: "http://localhost:9200"
+
 message_queue:
   engine: "redis" # possible value is redis, nats, nsq
   topic: "webhook"

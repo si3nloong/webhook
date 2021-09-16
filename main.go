@@ -13,6 +13,7 @@ import (
 	validator "github.com/go-playground/validator/v10"
 
 	"github.com/si3nloong/webhook/cmd"
+	es "github.com/si3nloong/webhook/db/elasticsearch"
 	rpc "github.com/si3nloong/webhook/grpc"
 	rest "github.com/si3nloong/webhook/http/api"
 	"github.com/si3nloong/webhook/internal/shared"
@@ -72,6 +73,7 @@ func main() {
 	}
 
 	ws := shared.NewServer(cfg)
+	es.New()
 
 	// actually publisher and observer is the same client
 	log.Println(ws)
