@@ -4,6 +4,9 @@ port: 3000
 no_of_worker: 2
 max_pending_webhook: 10000
 
+monitor:
+  enabled: true
+
 # gRPC server
 grpc:
   enabled: true # enable gRPC server

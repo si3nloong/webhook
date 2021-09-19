@@ -19,17 +19,21 @@ const (
 
 type Config struct {
 	Enabled        bool   `mapstructure:"enabled"`
-	Port           int    `mapstructure:"port" validate:"numeric"`
+	Port           int    `mapstructure:"port"`
 	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
 	RetryMechanism string `mapstructure:"retry_mechanism"`
 	NoOfWorker     int    `mapstructure:"no_of_worker" validate:"required,lte=100"`
-	DB             struct {
+	Monitor        struct {
+		Enabled bool `mapstructure:"enabled"`
+		Port    int  `mapstructure:"port"`
+	} `mapstructure:"monitor"`
+	DB struct {
 		Engine string `mapstructure:"engine"`
 	} `mapstructure:"db"`
 	GRPC struct {
 		Enabled bool   `mapstructure:"enabled"`
 		ApiKey  string `mapstructure:"api_key"`
-		Port    int    `mapstructure:"port" validate:"numeric"`
+		Port    int    `mapstructure:"port"`
 	} `mapstructure:"grpc"`
 	MessageQueue struct {
 		Engine     string `mapstructure:"engine" validate:"oneof=redis nats nsq"`
@@ -54,7 +58,8 @@ func (c *Config) SetDefault() {
 	c.NoOfWorker = runtime.NumCPU()
 	c.Enabled = true
 	c.Port = 3000
-	c.GRPC.Port = 9000
+	c.Monitor.Port = 3222
+	c.GRPC.Port = 5222
 	c.MessageQueue.Redis.Addr = "localhost:6379"
 	c.MessageQueue.NATS.JetStream = true
 }

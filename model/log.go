@@ -8,8 +8,8 @@ import (
 
 // Log :
 type Log struct {
-	ID        ksuid.KSUID
-	Method    string
-	Error     string
-	CreatedAt time.Time
+	ID        ksuid.KSUID `json:"id"`
+	URL       string      `json:"url"`
+	Method    string      `json:"method"`
+	CreatedAt time.Time   `json:"createdAt"`
 }

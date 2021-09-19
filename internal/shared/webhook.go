@@ -28,6 +28,8 @@ fire webhook ---> record stat (add success count or log error)
 
 type WebhookServer interface {
 	SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error
+	// pubsub.MessageQueue
+	// db.Repository
 }
 
 type app struct {

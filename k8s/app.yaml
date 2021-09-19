@@ -11,13 +11,17 @@ spec:
       targetPort: 3000
       protocol: TCP
       name: http
+    # Monitor APIs
+    - port: 3222
+      targetPort: 3222
+      protocol: TCP
+      name: monitor
     # gRPC server
-    - port: 9000
-      targetPort: 9000
+    - port: 5222
+      targetPort: 5222
       protocol: TCP
       name: grpc
-    # webhook UI
-  type: NodePort
+  type: ClusterIP
   selector:
     app: webhook
 
@@ -43,15 +47,34 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
         - name: webhook
-          image: 
+          image: webhook
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
-            - containerPort: 9000
+              name: http
+            - containerPort: 3222
+              name: monitor
+            - containerPort: 5222
+              name: grpc
           # envFrom:
           #   - configMapRef:
           #       name: 
-          # env:
-          #   - name: PORT
-          #     value: "5001"
+          env:
+            - name: PORT
+              value: "5001"
+
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
 

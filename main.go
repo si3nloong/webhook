@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -13,14 +12,13 @@ import (
 	validator "github.com/go-playground/validator/v10"
 
 	"github.com/si3nloong/webhook/cmd"
+	"github.com/si3nloong/webhook/db"
 	es "github.com/si3nloong/webhook/db/elasticsearch"
 	rpc "github.com/si3nloong/webhook/grpc"
 	rest "github.com/si3nloong/webhook/http/api"
 	"github.com/si3nloong/webhook/internal/shared"
 	"github.com/si3nloong/webhook/internal/util"
 	"github.com/si3nloong/webhook/pubsub"
-	"github.com/si3nloong/webhook/pubsub/nats"
-	"github.com/si3nloong/webhook/pubsub/redis"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -31,10 +29,10 @@ func main() {
 	var (
 		mq      pubsub.MessageQueue
 		grpcSvr *grpc.Server
-		// group   errgroup.Group
-		quit = make(chan os.Signal, 1)
-		v    = validator.New()
-		cfg  = cmd.Config{}
+		pv      db.Repository
+		quit    = make(chan os.Signal, 1)
+		v       = validator.New()
+		cfg     = cmd.Config{}
 	)
 
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -73,23 +71,27 @@ func main() {
 	}
 
 	ws := shared.NewServer(cfg)
-	es.New()
+	pv, err = es.New(cfg)
+	// if err := pv.InsertLog(ctx, &model.Log{}); err != nil {
+	// 	panic(err)
+	// }
+	pv.GetLogs(ctx)
 
 	// actually publisher and observer is the same client
 	log.Println(ws)
 
 	// setup message queuing
-	switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
-	case cmd.MessageQueueEngineRedis:
-		mq, err = redis.New(cfg)
-		if err != nil {
-			panic(err)
-		}
-	case cmd.MessageQueueEngineNats:
-		mq = nats.New(cfg)
-	default:
-		panic(fmt.Sprintf("unsupported message queue engine %q", cfg.MessageQueue.Engine))
-	}
+	// switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
+	// case cmd.MessageQueueEngineRedis:
+	// 	mq, err = redis.New(cfg)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// case cmd.MessageQueueEngineNats:
+	// 	mq = nats.New(cfg)
+	// default:
+	// 	panic(fmt.Sprintf("unsupported message queue engine %q", cfg.MessageQueue.Engine))
+	// }
 
 	// serve HTTP
 	if cfg.Enabled {
@@ -108,36 +110,40 @@ func main() {
 		}()
 	}
 
-	log.Println("HERE")
-
-	// serve gRPC
-	if cfg.GRPC.Enabled {
-
-		log.Println("HERE 1")
-		grpcSvr = rpc.NewServer(cfg, mq, v)
-
+	// serve HTTP
+	if cfg.Monitor.Enabled {
 		go func() error {
-			log.Println("HERE 333")
-			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))
-			if err != nil {
-				log.Println("HERE 1", err)
+			svr := rest.NewServer(mq, v)
+			httpServer := router.New()
+			httpServer.GET("/health", svr.Health)
+			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
+			log.Printf("Monitor server serve at %v", cfg.Monitor.Port)
+
+			if err := fasthttp.ListenAndServe(util.FormatPort(cfg.Port), httpServer.Handler); err != nil {
 				return err
 			}
-
-			log.Println("HERE 334")
-
-			log.Printf("gRPC server serve at %v", cfg.GRPC.Port)
-			if err := grpcSvr.Serve(lis); err != nil {
-				log.Println("HERE 1", err)
-				return err
-			}
-
-			log.Println("HERE 444")
 
 			return nil
 		}()
+	}
 
-		log.Println("HERE 2")
+	// serve gRPC
+	if cfg.GRPC.Enabled {
+		grpcSvr = rpc.NewServer(cfg, mq, v)
+
+		go func() error {
+			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))
+			if err != nil {
+				return err
+			}
+
+			log.Printf("gRPC server serve at %v", cfg.GRPC.Port)
+			if err := grpcSvr.Serve(lis); err != nil {
+				return err
+			}
+
+			return nil
+		}()
 	}
 
 	select {
