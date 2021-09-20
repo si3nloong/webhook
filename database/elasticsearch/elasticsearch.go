@@ -12,7 +12,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/segmentio/ksuid"
 	"github.com/si3nloong/webhook/cmd"
-	"github.com/si3nloong/webhook/model"
+	"github.com/si3nloong/webhook/entity"
 	"github.com/tidwall/gjson"
 )
 
@@ -51,7 +51,7 @@ func New(cfg cmd.Config) (*db, error) {
 	return v, nil
 }
 
-func (c *db) GetLogs(ctx context.Context) (datas []model.Log, err error) {
+func (c *db) GetLogs(ctx context.Context) (datas []entity.Log, err error) {
 	var buf bytes.Buffer
 	res, err := c.es.Search(
 		c.es.Search.WithContext(ctx),
@@ -74,7 +74,7 @@ func (c *db) GetLogs(ctx context.Context) (datas []model.Log, err error) {
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
 
 	for _, r := range result {
-		data := model.Log{}
+		data := entity.Log{}
 		if err := json.Unmarshal([]byte(r.Get("_source").Raw), &data); err != nil {
 			return nil, err
 		}
@@ -84,12 +84,12 @@ func (c *db) GetLogs(ctx context.Context) (datas []model.Log, err error) {
 	return
 }
 
-func (c *db) FindLog(ctx context.Context, id string) (data *model.Log, err error) {
-	data = new(model.Log)
+func (c *db) FindLog(ctx context.Context, id string) (data *entity.Log, err error) {
+	data = new(entity.Log)
 	return
 }
 
-func (c *db) InsertLog(ctx context.Context, data *model.Log) error {
+func (c *db) InsertLog(ctx context.Context, data *entity.Log) error {
 	blr := new(bytes.Buffer)
 
 	data.ID = ksuid.New()

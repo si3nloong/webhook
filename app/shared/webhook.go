@@ -2,7 +2,6 @@ package shared
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"log"
 	"net"
@@ -10,12 +9,11 @@ import (
 
 	"github.com/avast/retry-go/v3"
 	"github.com/go-playground/validator/v10"
-	"github.com/segmentio/ksuid"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/si3nloong/webhook/cmd"
+	"github.com/si3nloong/webhook/entity"
 	pb "github.com/si3nloong/webhook/grpc/proto"
 	"github.com/si3nloong/webhook/pubsub"
-
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/valyala/fasthttp"
 )
 
@@ -26,8 +24,19 @@ get from queue ---> fire webhook
 fire webhook ---> record stat (add success count or log error)
 */
 
+type Repository interface {
+	InsertLog(ctx context.Context, data *entity.Log) error
+	GetLogs(ctx context.Context) ([]entity.Log, error)
+	FindLog(ctx context.Context, id string) (*entity.Log, error)
+
+	// GetStats(ctx context.Context) error
+	// IncrStat(ctx context.Context) error
+}
+
 type WebhookServer interface {
 	SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error
+
+	Repository
 	// pubsub.MessageQueue
 	// db.Repository
 }
@@ -35,21 +44,20 @@ type WebhookServer interface {
 type app struct {
 	*validator.Validate
 	pubsub.MessageQueue
-	db *sql.DB
+	Repository
 }
 
 func NewServer(cfg cmd.Config) WebhookServer {
 	var (
 		svr = new(app)
-		err error
 	)
 	// svr.Stat = mt.NewMetricServerWithRedisClient(redis.NewClient(&redis.Options{}))
-	svr.db, err = sql.Open("mysql", "root:abcd1234@/webhook")
-	if err != nil {
-		panic(err)
-	}
-	_, err = svr.db.Exec("CREATE TABLE `ErrorLog` (`ID` VARCHAR(50), `Method` VARCHAR(50), `Error` TEXT);")
-	log.Println(err)
+	// svr.db, err = sql.Open("mysql", "root:abcd1234@/webhook")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// _, err = svr.db.Exec("CREATE TABLE `ErrorLog` (`ID` VARCHAR(50), `Method` VARCHAR(50), `Error` TEXT);")
+	// log.Println(err)
 	return svr
 }
 
@@ -136,7 +144,7 @@ func (s app) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error 
 	)
 	if err != nil {
 		log.Println("Error here =>", err)
-		s.LogError(ctx, req, err)
+		// s.LogError(ctx,, req, err)
 		return err
 	}
 
@@ -144,27 +152,4 @@ func (s app) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error 
 	// 	return err
 	// }
 	return nil
-}
-
-func (s *app) LogError(
-	ctx context.Context,
-	req *pb.SendWebhookRequest,
-	errs error,
-) error {
-	// log.Println("LogError 1")
-	// stmt, err := s.db.Prepare()
-	// if err != nil {
-	// 	log.Println("LogError 1 =>", err)
-	// 	return err
-	// }
-	// defer stmt.Close()
-	result, err := s.db.ExecContext(
-		ctx,
-		"INSERT INTO `ErrorLog` (`ID`,`Method`,`Error`) VALUES (?,?,?);",
-		ksuid.New().String(),
-		pb.SendWebhookRequest_HttpMethod_name[int32(req.Method)],
-		errs.Error(),
-	)
-	log.Println(result, err)
-	return err
 }

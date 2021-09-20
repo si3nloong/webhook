@@ -28,7 +28,8 @@ type Config struct {
 		Port    int  `mapstructure:"port"`
 	} `mapstructure:"monitor"`
 	DB struct {
-		Engine string `mapstructure:"engine"`
+		Engine string `mapstructure:"engine" validate:"oneof=elasticsearch"`
+		Host   string `mapstructure:"host" validate:""`
 	} `mapstructure:"db"`
 	GRPC struct {
 		Enabled bool   `mapstructure:"enabled"`

@@ -42,8 +42,6 @@ spec:
       labels:
         app: webhook
     spec:
-      imagePullSecrets:
-        - name: regsecret
       terminationGracePeriodSeconds: 60
       containers:
         - name: webhook
@@ -62,7 +60,6 @@ spec:
           env:
             - name: PORT
               value: "5001"
-
 
           livenessProbe:
             httpGet:

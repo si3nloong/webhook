@@ -1,0 +1,74 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+scalar Uint
+scalar Uint64
+scalar DateTime
+
+schema {
+  query: Query
+  # mutation: Mutation
+}
+
+# Directive
+directive @validate(
+  rule: String!
+) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: ID
+  endCursor: ID
+}
+
+type Query {
+  """
+  Get logs
+  """
+  logs(
+    after: ID
+    before: ID
+    first: Uint @validate(rule: "omitempty,required,min=1,max=100")
+    last: Uint @validate(rule: "omitempty,required,min=1,max=100")
+  ): LogConnection!
+}
+
+type LogConnection {
+  """
+  A list of nodes.
+  """
+  nodes: [Log!]!
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Uint64!
+}
+
+type Log {
+  id: ID!
+  url: String!
+  method: HttpMethod!
+  headers: [HttpHeader!]!
+  body: String!
+  retries: Uint!
+  success: Boolean!
+  createdAt: DateTime!
+}
+
+enum HttpMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  OPTIONS
+}
+
+type HttpHeader {
+  key: String!
+  value: String!
+}

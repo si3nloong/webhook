@@ -11,13 +11,12 @@ import (
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
 
+	rest "github.com/si3nloong/webhook/app/http/api"
+	"github.com/si3nloong/webhook/app/shared"
+	"github.com/si3nloong/webhook/app/util"
 	"github.com/si3nloong/webhook/cmd"
-	"github.com/si3nloong/webhook/db"
-	es "github.com/si3nloong/webhook/db/elasticsearch"
+	es "github.com/si3nloong/webhook/database/elasticsearch"
 	rpc "github.com/si3nloong/webhook/grpc"
-	rest "github.com/si3nloong/webhook/http/api"
-	"github.com/si3nloong/webhook/internal/shared"
-	"github.com/si3nloong/webhook/internal/util"
 	"github.com/si3nloong/webhook/pubsub"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
@@ -29,7 +28,7 @@ func main() {
 	var (
 		mq      pubsub.MessageQueue
 		grpcSvr *grpc.Server
-		pv      db.Repository
+		pv      shared.Repository
 		quit    = make(chan os.Signal, 1)
 		v       = validator.New()
 		cfg     = cmd.Config{}
