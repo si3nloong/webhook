@@ -6,7 +6,7 @@ require (
 	github.com/fasthttp/router v1.4.3
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis/v8 v8.11.3
-	github.com/nats-io/nats.go v1.12.1
+	github.com/nats-io/nats.go v1.12.2
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	github.com/valyala/fasthttp v1.30.0
@@ -22,5 +22,4 @@ require (
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
