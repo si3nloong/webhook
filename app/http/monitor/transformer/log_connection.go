@@ -1,8 +1,8 @@
 package transformer
 
 import (
+	"github.com/si3nloong/webhook/app/entity"
 	"github.com/si3nloong/webhook/app/http/monitor/graph/model"
-	"github.com/si3nloong/webhook/entity"
 )
 
 func ToLogConnection(in []entity.Log) (conn *model.LogConnection) {

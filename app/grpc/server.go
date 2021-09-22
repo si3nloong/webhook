@@ -3,9 +3,9 @@ package grpc
 import (
 	"github.com/go-playground/validator/v10"
 	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/si3nloong/webhook/app/grpc/proto"
 	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/cmd"
-	"github.com/si3nloong/webhook/grpc/proto"
 	"google.golang.org/grpc"
 )
 

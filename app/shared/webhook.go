@@ -11,12 +11,12 @@ import (
 	"github.com/avast/retry-go/v3"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
+	es "github.com/si3nloong/webhook/app/database/elasticsearch"
+	"github.com/si3nloong/webhook/app/entity"
+	pb "github.com/si3nloong/webhook/app/grpc/proto"
+	"github.com/si3nloong/webhook/app/mq/nats"
+	"github.com/si3nloong/webhook/app/mq/redis"
 	"github.com/si3nloong/webhook/cmd"
-	es "github.com/si3nloong/webhook/database/elasticsearch"
-	"github.com/si3nloong/webhook/entity"
-	pb "github.com/si3nloong/webhook/grpc/proto"
-	"github.com/si3nloong/webhook/mq/nats"
-	"github.com/si3nloong/webhook/mq/redis"
 	"github.com/valyala/fasthttp"
 )
 

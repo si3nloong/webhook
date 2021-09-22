@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/app/grpc/proto"
 )
 
 func (s *Server) Check(ctx context.Context, req *proto.HealthCheckRequest) (*proto.HealthCheckResponse, error) {

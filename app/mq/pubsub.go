@@ -3,7 +3,7 @@ package pubsub
 import (
 	"context"
 
-	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/app/grpc/proto"
 )
 
 type ConsumerFunc func(*proto.SendWebhookRequest) error

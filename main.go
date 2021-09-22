@@ -11,10 +11,10 @@ import (
 	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
 
+	rpc "github.com/si3nloong/webhook/app/grpc"
 	rest "github.com/si3nloong/webhook/app/http/api"
 	"github.com/si3nloong/webhook/app/util"
 	"github.com/si3nloong/webhook/cmd"
-	rpc "github.com/si3nloong/webhook/grpc"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"

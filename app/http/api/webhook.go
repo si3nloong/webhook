@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/si3nloong/webhook/grpc/proto"
+	"github.com/si3nloong/webhook/app/grpc/proto"
 	"github.com/valyala/fasthttp"
 )
 

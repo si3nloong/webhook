@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/adjust/rmq/v4"
-	pb "github.com/si3nloong/webhook/grpc/proto"
-	pubsub "github.com/si3nloong/webhook/mq"
+	pb "github.com/si3nloong/webhook/app/grpc/proto"
+	pubsub "github.com/si3nloong/webhook/app/mq"
 	"google.golang.org/protobuf/proto"
 )
 

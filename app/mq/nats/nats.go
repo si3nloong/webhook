@@ -10,8 +10,8 @@ import (
 
 	"github.com/avast/retry-go/v3"
 	"github.com/nats-io/nats.go"
+	pb "github.com/si3nloong/webhook/app/grpc/proto"
 	"github.com/si3nloong/webhook/cmd"
-	pb "github.com/si3nloong/webhook/grpc/proto"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/protobuf/proto"
 )
