@@ -3,6 +3,7 @@ package shared
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -11,9 +12,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/si3nloong/webhook/cmd"
+	es "github.com/si3nloong/webhook/database/elasticsearch"
 	"github.com/si3nloong/webhook/entity"
 	pb "github.com/si3nloong/webhook/grpc/proto"
-	"github.com/si3nloong/webhook/pubsub"
+	"github.com/si3nloong/webhook/mq/nats"
+	"github.com/si3nloong/webhook/mq/redis"
 	"github.com/valyala/fasthttp"
 )
 
@@ -34,23 +37,53 @@ type Repository interface {
 }
 
 type WebhookServer interface {
+	Validate(ctx context.Context, src interface{}) error
 	SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error
-
 	Repository
+
 	// pubsub.MessageQueue
 	// db.Repository
 }
 
-type app struct {
-	*validator.Validate
-	pubsub.MessageQueue
+type webhookServer struct {
+	v *validator.Validate
 	Repository
 }
 
 func NewServer(cfg cmd.Config) WebhookServer {
 	var (
-		svr = new(app)
+		svr = new(webhookServer)
+		err error
 	)
+
+	svr.v = validator.New()
+
+	// setup Database
+	switch cfg.DB.Engine {
+	case cmd.DatabaseEngineElasticsearch:
+		svr.Repository, err = es.New(cfg)
+	default:
+		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	// setup Message Queueing
+	switch cfg.MessageQueue.Engine {
+	case cmd.MessageQueueEngineNSQ:
+	case cmd.MessageQueueEngineNats:
+		nats.New(cfg)
+	case cmd.MessageQueueEngineRedis:
+		redis.New(cfg)
+	default:
+		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println(svr.Repository)
 	// svr.Stat = mt.NewMetricServerWithRedisClient(redis.NewClient(&redis.Options{}))
 	// svr.db, err = sql.Open("mysql", "root:abcd1234@/webhook")
 	// if err != nil {
@@ -61,15 +94,11 @@ func NewServer(cfg cmd.Config) WebhookServer {
 	return svr
 }
 
-type requestError struct {
-	body string
+func (s *webhookServer) Validate(ctx context.Context, src interface{}) error {
+	return s.v.StructCtx(ctx, src)
 }
 
-func (e requestError) Error() string {
-	return ""
-}
-
-func (s app) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error {
+func (s *webhookServer) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error {
 	opts := make([]retry.Option, 0)
 	if req.Retry < 1 {
 		req.Retry = 1
@@ -152,4 +181,12 @@ func (s app) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error 
 	// 	return err
 	// }
 	return nil
+}
+
+type requestError struct {
+	body string
+}
+
+func (e requestError) Error() string {
+	return ""
 }

@@ -12,12 +12,9 @@ import (
 	validator "github.com/go-playground/validator/v10"
 
 	rest "github.com/si3nloong/webhook/app/http/api"
-	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/app/util"
 	"github.com/si3nloong/webhook/cmd"
-	es "github.com/si3nloong/webhook/database/elasticsearch"
 	rpc "github.com/si3nloong/webhook/grpc"
-	"github.com/si3nloong/webhook/pubsub"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -26,9 +23,8 @@ import (
 func main() {
 
 	var (
-		mq      pubsub.MessageQueue
+		// mq      pubsub.MessageQueue
 		grpcSvr *grpc.Server
-		pv      shared.Repository
 		quit    = make(chan os.Signal, 1)
 		v       = validator.New()
 		cfg     = cmd.Config{}
@@ -69,17 +65,6 @@ func main() {
 		panic(err)
 	}
 
-	ws := shared.NewServer(cfg)
-	pv, err = es.New(cfg)
-	// if err := pv.InsertLog(ctx, &model.Log{}); err != nil {
-	// 	panic(err)
-	// }
-	pv.GetLogs(ctx)
-
-	// actually publisher and observer is the same client
-	log.Println(ws)
-
-	// setup message queuing
 	// switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
 	// case cmd.MessageQueueEngineRedis:
 	// 	mq, err = redis.New(cfg)
@@ -95,7 +80,7 @@ func main() {
 	// serve HTTP
 	if cfg.Enabled {
 		go func() error {
-			svr := rest.NewServer(mq, v)
+			svr := rest.NewServer(v)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
 			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
@@ -112,7 +97,7 @@ func main() {
 	// serve HTTP
 	if cfg.Monitor.Enabled {
 		go func() error {
-			svr := rest.NewServer(mq, v)
+			svr := rest.NewServer(v)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
 			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
@@ -128,7 +113,7 @@ func main() {
 
 	// serve gRPC
 	if cfg.GRPC.Enabled {
-		grpcSvr = rpc.NewServer(cfg, mq, v)
+		grpcSvr = rpc.NewServer(cfg, v)
 
 		go func() error {
 			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))

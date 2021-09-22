@@ -17,6 +17,12 @@ const (
 	MessageQueueEngineNSQ   MessageQueueEngine = "nsq"
 )
 
+type DatabaseEngine string
+
+const (
+	DatabaseEngineElasticsearch DatabaseEngine = "elasticsearch"
+)
+
 type Config struct {
 	Enabled        bool   `mapstructure:"enabled"`
 	Port           int    `mapstructure:"port"`
@@ -28,8 +34,8 @@ type Config struct {
 		Port    int  `mapstructure:"port"`
 	} `mapstructure:"monitor"`
 	DB struct {
-		Engine string `mapstructure:"engine" validate:"oneof=elasticsearch"`
-		Host   string `mapstructure:"host" validate:""`
+		Engine DatabaseEngine `mapstructure:"engine" validate:"oneof=elasticsearch"`
+		Host   string         `mapstructure:"host" validate:""`
 	} `mapstructure:"db"`
 	GRPC struct {
 		Enabled bool   `mapstructure:"enabled"`
@@ -37,9 +43,9 @@ type Config struct {
 		Port    int    `mapstructure:"port"`
 	} `mapstructure:"grpc"`
 	MessageQueue struct {
-		Engine     string `mapstructure:"engine" validate:"oneof=redis nats nsq"`
-		Topic      string `mapstructure:"topic" validate:"alphanum"`
-		QueueGroup string `mapstructure:"queue_group" validate:"alphanum"`
+		Engine     MessageQueueEngine `mapstructure:"engine" validate:"oneof=redis nats nsq"`
+		Topic      string             `mapstructure:"topic" validate:"alphanum"`
+		QueueGroup string             `mapstructure:"queue_group" validate:"alphanum"`
 		Redis      struct {
 			Cluster  bool   `mapstructure:"cluster"`
 			Addr     string `mapstructure:"addr"`

@@ -6,7 +6,7 @@ import (
 
 	"github.com/adjust/rmq/v4"
 	pb "github.com/si3nloong/webhook/grpc/proto"
-	"github.com/si3nloong/webhook/pubsub"
+	pubsub "github.com/si3nloong/webhook/mq"
 	"google.golang.org/protobuf/proto"
 )
 

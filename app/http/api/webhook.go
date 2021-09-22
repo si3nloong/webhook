@@ -19,9 +19,9 @@ func (s *Server) SendWebhook(ctx *fasthttp.RequestCtx) {
 	i.URL = strings.TrimSpace(i.URL)
 	i.Method = strings.TrimSpace(i.Method)
 
-	if err := s.StructCtx(ctx, i); err != nil {
-		return
-	}
+	// if err := s.StructCtx(ctx, i); err != nil {
+	// 	return
+	// }
 
 	req := new(proto.SendWebhookRequest)
 	req.Url = i.URL
@@ -38,9 +38,9 @@ func (s *Server) SendWebhook(ctx *fasthttp.RequestCtx) {
 	req.Headers = i.Headers
 
 	// push to nats
-	if err := s.Publish(ctx, req); err != nil {
-		return
-	}
+	// if err := s.Publish(ctx, req); err != nil {
+	// 	return
+	// }
 
 	fmt.Fprintf(ctx, "Hello, %s!\n", ctx.UserValue("name"))
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/cmd"
 	"github.com/si3nloong/webhook/grpc/proto"
-	"github.com/si3nloong/webhook/pubsub"
 	"google.golang.org/grpc"
 )
 
@@ -15,7 +14,7 @@ type Server struct {
 	proto.UnimplementedCurlHookServiceServer
 }
 
-func NewServer(cfg cmd.Config, mq pubsub.MessageQueue, v *validator.Validate) *grpc.Server {
+func NewServer(cfg cmd.Config, v *validator.Validate) *grpc.Server {
 	opts := make([]grpc.ServerOption, 0)
 	if cfg.GRPC.ApiKey != "" {
 		opts = append(opts, grpc.UnaryInterceptor(grpcauth.UnaryServerInterceptor(authorizationInterceptor(cfg.GRPC.ApiKey))))
@@ -23,8 +22,8 @@ func NewServer(cfg cmd.Config, mq pubsub.MessageQueue, v *validator.Validate) *g
 
 	grpcServer := grpc.NewServer(opts...)
 	svr := Server{}
-	svr.Validate = v
-	svr.MessageQueue = mq
+	// svr.Validate = v
+	// svr.MessageQueue = mq
 	proto.RegisterCurlHookServiceServer(grpcServer, &svr)
 	return grpcServer
 }
