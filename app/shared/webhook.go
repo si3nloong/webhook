@@ -31,23 +31,23 @@ type Repository interface {
 	InsertLog(ctx context.Context, data *entity.Log) error
 	GetLogs(ctx context.Context) ([]entity.Log, error)
 	FindLog(ctx context.Context, id string) (*entity.Log, error)
+}
 
-	// GetStats(ctx context.Context) error
-	// IncrStat(ctx context.Context) error
+type MessageQueue interface {
+	Publish(ctx context.Context, req *pb.SendWebhookRequest) error
 }
 
 type WebhookServer interface {
 	Validate(ctx context.Context, src interface{}) error
 	SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error
 	Repository
-
-	// pubsub.MessageQueue
-	// db.Repository
+	MessageQueue
 }
 
 type webhookServer struct {
 	v *validator.Validate
 	Repository
+	MessageQueue
 }
 
 func NewServer(cfg cmd.Config) WebhookServer {
@@ -71,11 +71,11 @@ func NewServer(cfg cmd.Config) WebhookServer {
 
 	// setup Message Queueing
 	switch cfg.MessageQueue.Engine {
-	case cmd.MessageQueueEngineNSQ:
+	// case cmd.MessageQueueEngineNSQ:
 	case cmd.MessageQueueEngineNats:
-		nats.New(cfg)
+		svr.MessageQueue, err = nats.New(cfg)
 	case cmd.MessageQueueEngineRedis:
-		redis.New(cfg)
+		svr.MessageQueue, err = redis.New(cfg)
 	default:
 		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
 	}

@@ -6,7 +6,6 @@ import (
 
 	"github.com/adjust/rmq/v4"
 	pb "github.com/si3nloong/webhook/app/grpc/proto"
-	pubsub "github.com/si3nloong/webhook/app/mq"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -15,7 +14,7 @@ type taskConsumer struct {
 	AutoAck       bool
 	AutoFinish    bool
 	SleepDuration time.Duration
-	cb            pubsub.ConsumerFunc
+	cb            func(*pb.SendWebhookRequest) error
 
 	LastDelivery   rmq.Delivery
 	LastDeliveries []rmq.Delivery
@@ -23,7 +22,7 @@ type taskConsumer struct {
 	finish chan int
 }
 
-func newTaskConsumer(cb pubsub.ConsumerFunc) rmq.Consumer {
+func newTaskConsumer(cb func(*pb.SendWebhookRequest) error) rmq.Consumer {
 	return &taskConsumer{
 		// name:       name,
 		cb:         cb,

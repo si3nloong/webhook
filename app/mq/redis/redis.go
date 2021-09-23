@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type messageQueue struct {
+type redisMQ struct {
 	config       cmd.Config
 	err          chan error
 	subsriptions []string
@@ -23,8 +23,8 @@ type messageQueue struct {
 	cleaner      *rmq.Cleaner
 }
 
-func New(cfg cmd.Config) (*messageQueue, error) {
-	mq := new(messageQueue)
+func New(cfg cmd.Config) (*redisMQ, error) {
+	mq := new(redisMQ)
 	mq.err = make(chan error)
 
 	if cfg.MessageQueue.Redis.Cluster {
@@ -68,7 +68,7 @@ func New(cfg cmd.Config) (*messageQueue, error) {
 	return mq, nil
 }
 
-func (mq *messageQueue) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
+func (mq *redisMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
 	log.Println("publishing 0")
 	b, err := proto.Marshal(req)
 	if err != nil {
@@ -83,7 +83,7 @@ func (mq *messageQueue) Publish(ctx context.Context, req *pb.SendWebhookRequest)
 	return nil
 }
 
-func (mq *messageQueue) SubscribeOn(func()) {
+func (mq *redisMQ) SubscribeOn(func()) {
 	for i := 0; i < mq.config.NoOfWorker; i++ {
 		name, err := mq.queue.AddConsumer(
 			mq.config.MessageQueue.QueueGroup,
@@ -99,7 +99,7 @@ func (mq *messageQueue) SubscribeOn(func()) {
 	}
 }
 
-func (mq *messageQueue) GracefulStop() error {
+func (mq *redisMQ) GracefulStop() error {
 	mq.queue.Destroy()
 	switch mq.queue.StopConsuming() {
 

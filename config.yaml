@@ -15,7 +15,9 @@ grpc:
 
 db:
   engine: "elasticsearch"
-  connection: "http://localhost:9200"
+  host: "http://localhost:9200"
+  username: ""
+  password: ""
 
 message_queue:
   engine: "redis" # possible value is redis, nats, nsq

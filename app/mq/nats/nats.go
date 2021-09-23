@@ -16,20 +16,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type messageQueue struct {
+type natsMQ struct {
 	sync.RWMutex
 	subj string
 	js   nats.JetStreamContext
 	subs []*nats.Subscription
 }
 
-func New(cfg cmd.Config) *messageQueue {
-	q := new(messageQueue)
+func New(cfg cmd.Config) (*natsMQ, error) {
+	q := new(natsMQ)
 
 	// Connect to NATS
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// if err := handleMessage(&pb.SendWebhookRequest{
@@ -80,10 +80,10 @@ func New(cfg cmd.Config) *messageQueue {
 
 	q.js = js
 
-	return q
+	return q, nil
 }
 
-func (mq *messageQueue) onQueueSubscribe(msg *nats.Msg) {
+func (mq *natsMQ) onQueueSubscribe(msg *nats.Msg) {
 	log.Println("Handle message ========>")
 	log.Println(string(msg.Data))
 	// log.Println(msg)
@@ -154,7 +154,7 @@ func handleMessage(req *pb.SendWebhookRequest) error {
 	return nil
 }
 
-func (q *messageQueue) GracefulStop() error {
+func (q *natsMQ) GracefulStop() error {
 	// return q.
 	return nil
 }

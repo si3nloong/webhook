@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (q *messageQueue) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
+func (q *natsMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
 	b, err := proto.Marshal(req)
 	if err != nil {
 		return err
