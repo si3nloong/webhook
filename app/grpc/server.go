@@ -10,7 +10,7 @@ import (
 )
 
 type Server struct {
-	shared.Server
+	ws shared.WebhookServer
 	proto.UnimplementedCurlHookServiceServer
 }
 
@@ -22,8 +22,6 @@ func NewServer(cfg cmd.Config, v *validator.Validate) *grpc.Server {
 
 	grpcServer := grpc.NewServer(opts...)
 	svr := Server{}
-	// svr.Validate = v
-	// svr.MessageQueue = mq
 	proto.RegisterCurlHookServiceServer(grpcServer, &svr)
 	return grpcServer
 }

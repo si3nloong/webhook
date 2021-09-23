@@ -80,7 +80,7 @@ func main() {
 	// serve HTTP
 	if cfg.Enabled {
 		go func() error {
-			svr := rest.NewServer(v)
+			svr := rest.NewServer()
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
 			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
@@ -97,7 +97,7 @@ func main() {
 	// serve HTTP
 	if cfg.Monitor.Enabled {
 		go func() error {
-			svr := rest.NewServer(v)
+			svr := rest.NewServer()
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
 			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
