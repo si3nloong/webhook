@@ -38,12 +38,12 @@ func (c *taskConsumer) String() string {
 
 func (c *taskConsumer) Consume(delivery rmq.Delivery) {
 	req := new(pb.SendWebhookRequest)
-	log.Println("hERE 0")
 	if err := proto.Unmarshal([]byte(delivery.Payload()), req); err != nil {
 		return
 	}
 
 	log.Println("hERE 1")
+	log.Println(delivery)
 
 	if err := c.cb(req); err != nil {
 		return

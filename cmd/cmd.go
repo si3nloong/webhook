@@ -33,11 +33,14 @@ type Config struct {
 		Enabled bool `mapstructure:"enabled"`
 		Port    int  `mapstructure:"port"`
 	} `mapstructure:"monitor"`
+	Elasticsearch struct {
+		Host     string `mapstructure:"host" validate:"required"`
+		Username string `mapstructure:"username"`
+		Password string `mapstructure:"password"`
+		ApiKey   string `mapstructure:"api_key"`
+	} `mapstructure:"elasticsearch"`
 	DB struct {
-		Engine   DatabaseEngine `mapstructure:"engine" validate:"oneof=elasticsearch"`
-		Host     string         `mapstructure:"host" validate:"required"`
-		Username string         `mapstructure:"username"`
-		Password string         `mapstructure:"password"`
+		Engine DatabaseEngine `mapstructure:"engine" validate:"oneof=elasticsearch"`
 	} `mapstructure:"db"`
 	GRPC struct {
 		Enabled bool   `mapstructure:"enabled"`

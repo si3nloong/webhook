@@ -76,12 +76,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Logs func(childComplexity int, after *string, before *string, first *string, last *string) int
+		Logs func(childComplexity int, after *string, before *string, first *uint, last *uint) int
 	}
 }
 
 type QueryResolver interface {
-	Logs(ctx context.Context, after *string, before *string, first *string, last *string) (*model.LogConnection, error)
+	Logs(ctx context.Context, after *string, before *string, first *uint, last *uint) (*model.LogConnection, error)
 }
 
 type executableSchema struct {
@@ -228,7 +228,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Logs(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*string), args["last"].(*string)), true
+		return e.complexity.Query.Logs(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*uint), args["last"].(*uint)), true
 
 	}
 	return 0, false
@@ -413,10 +413,10 @@ func (ec *executionContext) field_Query_logs_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["before"] = arg1
-	var arg2 *string
+	var arg2 *uint
 	if tmp, ok := rawArgs["first"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		directive0 := func(ctx context.Context) (interface{}, error) { return ec.unmarshalOUint2ᚖstring(ctx, tmp) }
+		directive0 := func(ctx context.Context) (interface{}, error) { return ec.unmarshalOUint2ᚖuint(ctx, tmp) }
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			rule, err := ec.unmarshalNString2string(ctx, "omitempty,required,min=1,max=100")
 			if err != nil {
@@ -432,19 +432,19 @@ func (ec *executionContext) field_Query_logs_args(ctx context.Context, rawArgs m
 		if err != nil {
 			return nil, graphql.ErrorOnPath(ctx, err)
 		}
-		if data, ok := tmp.(*string); ok {
+		if data, ok := tmp.(*uint); ok {
 			arg2 = data
 		} else if tmp == nil {
 			arg2 = nil
 		} else {
-			return nil, graphql.ErrorOnPath(ctx, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp))
+			return nil, graphql.ErrorOnPath(ctx, fmt.Errorf(`unexpected type %T from directive, should be *uint`, tmp))
 		}
 	}
 	args["first"] = arg2
-	var arg3 *string
+	var arg3 *uint
 	if tmp, ok := rawArgs["last"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		directive0 := func(ctx context.Context) (interface{}, error) { return ec.unmarshalOUint2ᚖstring(ctx, tmp) }
+		directive0 := func(ctx context.Context) (interface{}, error) { return ec.unmarshalOUint2ᚖuint(ctx, tmp) }
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			rule, err := ec.unmarshalNString2string(ctx, "omitempty,required,min=1,max=100")
 			if err != nil {
@@ -460,12 +460,12 @@ func (ec *executionContext) field_Query_logs_args(ctx context.Context, rawArgs m
 		if err != nil {
 			return nil, graphql.ErrorOnPath(ctx, err)
 		}
-		if data, ok := tmp.(*string); ok {
+		if data, ok := tmp.(*uint); ok {
 			arg3 = data
 		} else if tmp == nil {
 			arg3 = nil
 		} else {
-			return nil, graphql.ErrorOnPath(ctx, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp))
+			return nil, graphql.ErrorOnPath(ctx, fmt.Errorf(`unexpected type %T from directive, should be *uint`, tmp))
 		}
 	}
 	args["last"] = arg3
@@ -785,9 +785,9 @@ func (ec *executionContext) _Log_retries(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uint)
 	fc.Result = res
-	return ec.marshalNUint2string(ctx, field.Selections, res)
+	return ec.marshalNUint2uint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Log_success(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
@@ -1124,7 +1124,7 @@ func (ec *executionContext) _Query_logs(ctx context.Context, field graphql.Colle
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Logs(rctx, args["after"].(*string), args["before"].(*string), args["first"].(*string), args["last"].(*string))
+		return ec.resolvers.Query().Logs(rctx, args["after"].(*string), args["before"].(*string), args["first"].(*uint), args["last"].(*uint))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3005,13 +3005,13 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNUint2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
+func (ec *executionContext) unmarshalNUint2uint(ctx context.Context, v interface{}) (uint, error) {
+	res, err := scalar.UnmarshalUint(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUint2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
+func (ec *executionContext) marshalNUint2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	res := scalar.MarshalUint(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3355,19 +3355,19 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return graphql.MarshalString(*v)
 }
 
-func (ec *executionContext) unmarshalOUint2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalOUint2ᚖuint(ctx context.Context, v interface{}) (*uint, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalString(v)
+	res, err := scalar.UnmarshalUint(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOUint2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalOUint2ᚖuint(ctx context.Context, sel ast.SelectionSet, v *uint) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return graphql.MarshalString(*v)
+	return scalar.MarshalUint(*v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

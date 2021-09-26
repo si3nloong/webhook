@@ -14,16 +14,15 @@ import (
 )
 
 type redisMQ struct {
-	config       cmd.Config
-	err          chan error
-	subsriptions []string
-	client       redis.Cmdable
-	conn         rmq.Connection
-	queue        rmq.Queue
-	cleaner      *rmq.Cleaner
+	err     chan error
+	subs    []string
+	client  redis.Cmdable
+	conn    rmq.Connection
+	queue   rmq.Queue
+	cleaner *rmq.Cleaner
 }
 
-func New(cfg cmd.Config) (*redisMQ, error) {
+func New(cfg cmd.Config, cb func(delivery rmq.Delivery)) (*redisMQ, error) {
 	mq := new(redisMQ)
 	mq.err = make(chan error)
 
@@ -48,6 +47,8 @@ func New(cfg cmd.Config) (*redisMQ, error) {
 		return nil, err
 	}
 
+	log.Println("ping redis")
+
 	conn, err := rmq.OpenConnectionWithRedisClient(cfg.MessageQueue.Topic, mq.client.(*redis.Client), mq.err)
 	if err != nil {
 		return nil, err
@@ -62,6 +63,16 @@ func New(cfg cmd.Config) (*redisMQ, error) {
 		return nil, err
 	}
 
+	// setup consumers
+	for i := 0; i < cfg.NoOfWorker; i++ {
+		name, err := q.AddConsumerFunc(cfg.MessageQueue.QueueGroup, cb)
+		if err != nil {
+			panic(err)
+		}
+
+		mq.subs = append(mq.subs, name)
+	}
+
 	mq.cleaner = rmq.NewCleaner(conn)
 	mq.conn = conn
 	mq.queue = q
@@ -69,12 +80,10 @@ func New(cfg cmd.Config) (*redisMQ, error) {
 }
 
 func (mq *redisMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
-	log.Println("publishing 0")
 	b, err := proto.Marshal(req)
 	if err != nil {
 		return err
 	}
-	log.Println("publishing 1")
 
 	if err := mq.queue.PublishBytes(b); err != nil {
 		return err
@@ -83,26 +92,10 @@ func (mq *redisMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) erro
 	return nil
 }
 
-func (mq *redisMQ) SubscribeOn(func()) {
-	for i := 0; i < mq.config.NoOfWorker; i++ {
-		name, err := mq.queue.AddConsumer(
-			mq.config.MessageQueue.QueueGroup,
-			newTaskConsumer(func(r *pb.SendWebhookRequest) error {
-				log.Println(r)
-				return nil
-			}),
-		)
-		if err != nil {
-			panic(err)
-		}
-		mq.subsriptions = append(mq.subsriptions, name)
-	}
-}
+// func (mq *redisMQ) GracefulStop() error {
+// 	mq.queue.Destroy()
+// 	switch mq.queue.StopConsuming() {
 
-func (mq *redisMQ) GracefulStop() error {
-	mq.queue.Destroy()
-	switch mq.queue.StopConsuming() {
-
-	}
-	return nil
-}
+// 	}
+// 	return nil
+// }

@@ -6,12 +6,22 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-// Log :
-type Log struct {
+type WebhookRequestStatus int
+
+const (
+	WebhookRequestPending WebhookRequestStatus = iota
+	WebhookRequestFailed
+	WebhookRequestSuccess
+)
+
+// WebhookRequest :
+type WebhookRequest struct {
 	ID        ksuid.KSUID       `json:"id"`
 	URL       string            `json:"url"`
 	Headers   map[string]string `json:"headers"`
 	Body      string            `json:"body"`
 	Method    string            `json:"method"`
+	Success   bool              `json:""`
 	CreatedAt time.Time         `json:"createdAt"`
+	UpdatedAt time.Time         `json:"updatedAt"`
 }

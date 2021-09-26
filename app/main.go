@@ -13,6 +13,7 @@ import (
 
 	rpc "github.com/si3nloong/webhook/app/grpc"
 	rest "github.com/si3nloong/webhook/app/http/api"
+	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/app/util"
 	"github.com/si3nloong/webhook/cmd"
 	"github.com/spf13/viper"
@@ -65,22 +66,12 @@ func main() {
 		panic(err)
 	}
 
-	// switch cmd.MessageQueueEngine(cfg.MessageQueue.Engine) {
-	// case cmd.MessageQueueEngineRedis:
-	// 	mq, err = redis.New(cfg)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// case cmd.MessageQueueEngineNats:
-	// 	mq = nats.New(cfg)
-	// default:
-	// 	panic(fmt.Sprintf("unsupported message queue engine %q", cfg.MessageQueue.Engine))
-	// }
+	ws := shared.NewServer(cfg)
 
 	// serve HTTP
 	if cfg.Enabled {
 		go func() error {
-			svr := rest.NewServer()
+			svr := rest.NewServer(ws)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
 			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
@@ -97,7 +88,7 @@ func main() {
 	// serve HTTP
 	if cfg.Monitor.Enabled {
 		go func() error {
-			svr := rest.NewServer()
+			svr := rest.NewServer(ws)
 			httpServer := router.New()
 			httpServer.GET("/health", svr.Health)
 			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
@@ -113,7 +104,7 @@ func main() {
 
 	// serve gRPC
 	if cfg.GRPC.Enabled {
-		grpcSvr = rpc.NewServer(cfg, v)
+		grpcSvr = rpc.NewServer(cfg, ws)
 
 		go func() error {
 			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))

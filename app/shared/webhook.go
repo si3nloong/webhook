@@ -8,6 +8,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/adjust/rmq/v4"
 	"github.com/avast/retry-go/v3"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
@@ -18,6 +19,7 @@ import (
 	"github.com/si3nloong/webhook/app/mq/redis"
 	"github.com/si3nloong/webhook/cmd"
 	"github.com/valyala/fasthttp"
+	"google.golang.org/protobuf/proto"
 )
 
 /*
@@ -28,9 +30,9 @@ fire webhook ---> record stat (add success count or log error)
 */
 
 type Repository interface {
-	InsertLog(ctx context.Context, data *entity.Log) error
-	GetLogs(ctx context.Context) ([]entity.Log, error)
-	FindLog(ctx context.Context, id string) (*entity.Log, error)
+	InsertLog(ctx context.Context, data *entity.WebhookRequest) error
+	GetLogs(ctx context.Context, curCursor string, limit uint) (datas []entity.WebhookRequest, nextCursor string, err error)
+	FindLog(ctx context.Context, id string) (*entity.WebhookRequest, error)
 }
 
 type MessageQueue interface {
@@ -45,6 +47,7 @@ type WebhookServer interface {
 }
 
 type webhookServer struct {
+	// logger log.Logger
 	v *validator.Validate
 	Repository
 	MessageQueue
@@ -71,11 +74,18 @@ func NewServer(cfg cmd.Config) WebhookServer {
 
 	// setup Message Queueing
 	switch cfg.MessageQueue.Engine {
-	// case cmd.MessageQueueEngineNSQ:
+	case cmd.MessageQueueEngineNSQ:
 	case cmd.MessageQueueEngineNats:
 		svr.MessageQueue, err = nats.New(cfg)
 	case cmd.MessageQueueEngineRedis:
-		svr.MessageQueue, err = redis.New(cfg)
+		svr.MessageQueue, err = redis.New(cfg, func(delivery rmq.Delivery) {
+			req := new(pb.SendWebhookRequest)
+			if err := proto.Unmarshal([]byte(delivery.Payload()), req); err != nil {
+				return
+			}
+
+			svr.SendWebhook(context.TODO(), req)
+		})
 	default:
 		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
 	}
@@ -83,14 +93,6 @@ func NewServer(cfg cmd.Config) WebhookServer {
 		panic(err)
 	}
 
-	log.Println(svr.Repository)
-	// svr.Stat = mt.NewMetricServerWithRedisClient(redis.NewClient(&redis.Options{}))
-	// svr.db, err = sql.Open("mysql", "root:abcd1234@/webhook")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// _, err = svr.db.Exec("CREATE TABLE `ErrorLog` (`ID` VARCHAR(50), `Method` VARCHAR(50), `Error` TEXT);")
-	// log.Println(err)
 	return svr
 }
 
@@ -98,11 +100,28 @@ func (s *webhookServer) Validate(ctx context.Context, src interface{}) error {
 	return s.v.StructCtx(ctx, src)
 }
 
+func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
+	// may be we store into database first before publish to message queue
+	data := entity.WebhookRequest{}
+	data.Method = req.Method.String()
+	data.URL = req.Url
+	data.Body = req.Body
+	data.Headers = req.Headers
+
+	if err := s.InsertLog(ctx, &data); err != nil {
+		return err
+	}
+
+	return s.MessageQueue.Publish(ctx, req)
+}
+
 func (s *webhookServer) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error {
 	opts := make([]retry.Option, 0)
 	if req.Retry < 1 {
 		req.Retry = 1
 	}
+
+	log.Println("SendWebhook")
 
 	opts = append(opts, retry.Attempts(uint(req.Retry)))
 	// if req.RetryMechanism > 0 {

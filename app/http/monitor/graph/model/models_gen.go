@@ -20,7 +20,7 @@ type Log struct {
 	Method    HTTPMethod    `json:"method"`
 	Headers   []*HTTPHeader `json:"headers"`
 	Body      string        `json:"body"`
-	Retries   string        `json:"retries"`
+	Retries   uint          `json:"retries"`
 	Success   bool          `json:"success"`
 	CreatedAt time.Time     `json:"createdAt"`
 }

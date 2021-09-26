@@ -13,11 +13,14 @@ grpc:
   api_key: "abcd"
   port: 9000
 
-db:
-  engine: "elasticsearch"
+# Database - Elasticsearch
+elasticsearch:
   host: "http://localhost:9200"
   username: ""
   password: ""
+
+db:
+  engine: "elasticsearch"
 
 message_queue:
   engine: "redis" # possible value is redis, nats, nsq

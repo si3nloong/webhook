@@ -8,7 +8,7 @@ type Server struct {
 	ws shared.WebhookServer
 }
 
-func NewServer() *Server {
+func NewServer(ws shared.WebhookServer) *Server {
 	svr := new(Server)
 	return svr
 }

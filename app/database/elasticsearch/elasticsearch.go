@@ -24,10 +24,11 @@ type db struct {
 func New(cfg cmd.Config) (*db, error) {
 	esConfig := elasticsearch.Config{
 		Addresses: []string{
-			"http://localhost:9200",
+			cfg.Elasticsearch.Host,
 		},
-		// Username: "user",
-		// Password: "pass",
+		Username: cfg.Elasticsearch.Username,
+		Password: cfg.Elasticsearch.Password,
+		APIKey:   cfg.Elasticsearch.ApiKey,
 	}
 
 	// es, err := elasticsearch.NewDefaultClient()
@@ -51,7 +52,7 @@ func New(cfg cmd.Config) (*db, error) {
 	return v, nil
 }
 
-func (c *db) GetLogs(ctx context.Context) (datas []entity.Log, err error) {
+func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas []entity.WebhookRequest, nextCursor string, err error) {
 	var buf bytes.Buffer
 	res, err := c.es.Search(
 		c.es.Search.WithContext(ctx),
@@ -61,22 +62,22 @@ func (c *db) GetLogs(ctx context.Context) (datas []entity.Log, err error) {
 		c.es.Search.WithPretty(),
 	)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	defer res.Body.Close()
 
 	buf.Reset()
 
 	if _, err := buf.ReadFrom(res.Body); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
 
 	for _, r := range result {
-		data := entity.Log{}
+		data := entity.WebhookRequest{}
 		if err := json.Unmarshal([]byte(r.Get("_source").Raw), &data); err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		datas = append(datas, data)
 	}
@@ -84,16 +85,25 @@ func (c *db) GetLogs(ctx context.Context) (datas []entity.Log, err error) {
 	return
 }
 
-func (c *db) FindLog(ctx context.Context, id string) (data *entity.Log, err error) {
-	data = new(entity.Log)
+func (c *db) FindLog(ctx context.Context, id string) (data *entity.WebhookRequest, err error) {
+	data = new(entity.WebhookRequest)
 	return
 }
 
-func (c *db) InsertLog(ctx context.Context, data *entity.Log) error {
+func (c *db) InsertLog(ctx context.Context, data *entity.WebhookRequest) error {
 	blr := new(bytes.Buffer)
 
-	data.ID = ksuid.New()
-	data.CreatedAt = time.Now().UTC()
+	nilTime := time.Time{}
+	utcNow := time.Now().UTC()
+	if data.ID == ksuid.Nil {
+		data.ID = ksuid.New()
+	}
+	if data.CreatedAt == nilTime {
+		data.CreatedAt = utcNow
+	}
+	if data.UpdatedAt == nilTime {
+		data.UpdatedAt = utcNow
+	}
 	if err := json.NewEncoder(blr).Encode(data); err != nil {
 		return err
 	}
