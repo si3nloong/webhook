@@ -5,7 +5,7 @@ import (
 )
 
 type Server struct {
-	ws shared.WebhookServer
+	shared.WebhookServer
 }
 
 func NewServer(ws shared.WebhookServer) *Server {
