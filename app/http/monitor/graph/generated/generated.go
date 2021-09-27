@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 		Retries   func(childComplexity int) int
 		Success   func(childComplexity int) int
 		URL       func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
 	}
 
 	LogConnection struct {
@@ -76,12 +77,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Log  func(childComplexity int, id string) int
 		Logs func(childComplexity int, after *string, before *string, first *uint, last *uint) int
 	}
 }
 
 type QueryResolver interface {
 	Logs(ctx context.Context, after *string, before *string, first *uint, last *uint) (*model.LogConnection, error)
+	Log(ctx context.Context, id string) (*model.Log, error)
 }
 
 type executableSchema struct {
@@ -169,6 +172,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Log.URL(childComplexity), true
 
+	case "Log.updatedAt":
+		if e.complexity.Log.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Log.UpdatedAt(childComplexity), true
+
 	case "LogConnection.nodes":
 		if e.complexity.LogConnection.Nodes == nil {
 			break
@@ -217,6 +227,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
+
+	case "Query.log":
+		if e.complexity.Query.Log == nil {
+			break
+		}
+
+		args, err := ec.field_Query_log_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Log(childComplexity, args["id"].(string)), true
 
 	case "Query.logs":
 		if e.complexity.Query.Logs == nil {
@@ -314,6 +336,7 @@ type Query {
     first: Uint @validate(rule: "omitempty,required,min=1,max=100")
     last: Uint @validate(rule: "omitempty,required,min=1,max=100")
   ): LogConnection!
+  log(id: ID!): Log
 }
 
 type LogConnection {
@@ -340,6 +363,7 @@ type Log {
   retries: Uint!
   success: Boolean!
   createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 enum HttpMethod {
@@ -389,6 +413,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_log_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -860,6 +899,41 @@ func (ec *executionContext) _Log_createdAt(ctx context.Context, field graphql.Co
 	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Log_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Log) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Log",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _LogConnection_nodes(ctx context.Context, field graphql.CollectedField, obj *model.LogConnection) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1139,6 +1213,45 @@ func (ec *executionContext) _Query_logs(ctx context.Context, field graphql.Colle
 	res := resTmp.(*model.LogConnection)
 	fc.Result = res
 	return ec.marshalNLogConnection2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐLogConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_log(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_log_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Log(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Log)
+	fc.Result = res
+	return ec.marshalOLog2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐLog(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2425,6 +2538,11 @@ func (ec *executionContext) _Log(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updatedAt":
+			out.Values[i] = ec._Log_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2536,6 +2654,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			})
+		case "log":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_log(ctx, field)
 				return res
 			})
 		case "__type":
@@ -3329,6 +3458,13 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	return graphql.MarshalID(*v)
+}
+
+func (ec *executionContext) marshalOLog2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v *model.Log) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Log(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

@@ -18,7 +18,8 @@ import (
 
 type db struct {
 	indexName string
-	es        *elasticsearch.Client
+	client    *elasticsearch.Client
+	timeout   time.Duration
 }
 
 func New(cfg cmd.Config) (*db, error) {
@@ -32,12 +33,12 @@ func New(cfg cmd.Config) (*db, error) {
 	}
 
 	// es, err := elasticsearch.NewDefaultClient()
-	es, err := elasticsearch.NewClient(esConfig)
+	client, err := elasticsearch.NewClient(esConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := es.Info()
+	res, err := client.Info()
 	if err != nil {
 		return nil, err
 	}
@@ -48,18 +49,22 @@ func New(cfg cmd.Config) (*db, error) {
 
 	v := new(db)
 	v.indexName = "webhook_index"
-	v.es = es
+	v.client = client
+	v.timeout = 1 * time.Minute
 	return v, nil
 }
 
-func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas []entity.WebhookRequest, nextCursor string, err error) {
+func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error) {
+	ctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
 	var buf bytes.Buffer
-	res, err := c.es.Search(
-		c.es.Search.WithContext(ctx),
-		c.es.Search.WithIndex(c.indexName),
-		c.es.Search.WithBody(&buf),
-		c.es.Search.WithTrackTotalHits(true),
-		c.es.Search.WithPretty(),
+	res, err := c.client.Search(
+		c.client.Search.WithContext(ctx),
+		c.client.Search.WithIndex(c.indexName),
+		c.client.Search.WithBody(&buf),
+		c.client.Search.WithTrackTotalHits(true),
+		c.client.Search.WithPretty(),
 	)
 	if err != nil {
 		return nil, "", err
@@ -72,6 +77,7 @@ func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas [
 		return nil, "", err
 	}
 
+	log.Println(buf.String())
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
 
 	for _, r := range result {
@@ -79,13 +85,33 @@ func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas [
 		if err := json.Unmarshal([]byte(r.Get("_source").Raw), &data); err != nil {
 			return nil, "", err
 		}
-		datas = append(datas, data)
+		datas = append(datas, &data)
 	}
 
 	return
 }
 
 func (c *db) FindLog(ctx context.Context, id string) (data *entity.WebhookRequest, err error) {
+	// Instantiate a request object
+	req := esapi.GetRequest{
+		Index:      c.indexName,
+		DocumentID: id,
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
+	res, err := req.Do(ctx, c.client)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(res.Body)
+
+	log.Println(buf.String())
+
 	data = new(entity.WebhookRequest)
 	return
 }
@@ -110,13 +136,16 @@ func (c *db) InsertLog(ctx context.Context, data *entity.WebhookRequest) error {
 
 	// Instantiate a request object
 	req := esapi.IndexRequest{
-		Index: c.indexName,
-		// DocumentID: strconv.Itoa(i + 1),
-		Body:    blr,
-		Refresh: "true",
+		Index:      c.indexName,
+		DocumentID: data.ID.String(),
+		Body:       blr,
+		Refresh:    "true",
 	}
 
-	res, err := req.Do(ctx, c.es)
+	ctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
+	res, err := req.Do(ctx, c.client)
 	if err != nil {
 		return err
 	}

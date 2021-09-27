@@ -27,6 +27,15 @@ func (r *queryResolver) Logs(ctx context.Context, after *string, before *string,
 	return transformer.ToLogConnection(datas), nil
 }
 
+func (r *queryResolver) Log(ctx context.Context, id string) (*model.Log, error) {
+	data, err := r.FindLog(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return transformer.ToLog(data), nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

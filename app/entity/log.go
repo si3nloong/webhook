@@ -18,10 +18,9 @@ const (
 type WebhookRequest struct {
 	ID        ksuid.KSUID       `json:"id"`
 	URL       string            `json:"url"`
+	Method    string            `json:"method"`
 	Headers   map[string]string `json:"headers"`
 	Body      string            `json:"body"`
-	Method    string            `json:"method"`
-	Success   bool              `json:""`
 	CreatedAt time.Time         `json:"createdAt"`
 	UpdatedAt time.Time         `json:"updatedAt"`
 }

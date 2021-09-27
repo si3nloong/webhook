@@ -31,7 +31,7 @@ fire webhook ---> record stat (add success count or log error)
 
 type Repository interface {
 	InsertLog(ctx context.Context, data *entity.WebhookRequest) error
-	GetLogs(ctx context.Context, curCursor string, limit uint) (datas []entity.WebhookRequest, nextCursor string, err error)
+	GetLogs(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error)
 	FindLog(ctx context.Context, id string) (*entity.WebhookRequest, error)
 }
 

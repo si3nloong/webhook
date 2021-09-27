@@ -23,6 +23,7 @@ type Log struct {
 	Retries   uint          `json:"retries"`
 	Success   bool          `json:"success"`
 	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
 }
 
 type LogConnection struct {
