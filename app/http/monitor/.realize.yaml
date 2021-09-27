@@ -3,13 +3,8 @@ settings:
     force: false
     interval: 0s
 schema:
-- name: go-webhook
-  path: ./app
-  env:
-    WEBHOOK_MESSAGE_QUEUE_REDIS_CLUSTER: true
-    WEBHOOK_MESSAGE_QUEUE_REDIS_HOST: "localhost"
-    WEBHOOK_MESSAGE_QUEUE_REDIS_PORT: "6379"
-    WEBHOOK_MESSAGE_QUEUE_REDIS_PASSWORD: ""
+- name: monitor
+  path: .
   commands:
     install:
       status: true

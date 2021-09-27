@@ -17,21 +17,40 @@ const (
 	MessageQueueEngineNSQ   MessageQueueEngine = "nsq"
 )
 
+type DatabaseEngine string
+
+const (
+	DatabaseEngineElasticsearch DatabaseEngine = "elasticsearch"
+)
+
 type Config struct {
 	Enabled        bool   `mapstructure:"enabled"`
-	Port           int    `mapstructure:"port" validate:"numeric"`
+	Port           int    `mapstructure:"port"`
 	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
 	RetryMechanism string `mapstructure:"retry_mechanism"`
 	NoOfWorker     int    `mapstructure:"no_of_worker" validate:"required,lte=100"`
-	GRPC           struct {
+	Monitor        struct {
+		Enabled bool `mapstructure:"enabled"`
+		Port    int  `mapstructure:"port"`
+	} `mapstructure:"monitor"`
+	Elasticsearch struct {
+		Host     string `mapstructure:"host" validate:"required"`
+		Username string `mapstructure:"username"`
+		Password string `mapstructure:"password"`
+		ApiKey   string `mapstructure:"api_key"`
+	} `mapstructure:"elasticsearch"`
+	DB struct {
+		Engine DatabaseEngine `mapstructure:"engine" validate:"oneof=elasticsearch"`
+	} `mapstructure:"db"`
+	GRPC struct {
 		Enabled bool   `mapstructure:"enabled"`
 		ApiKey  string `mapstructure:"api_key"`
-		Port    int    `mapstructure:"port" validate:"numeric"`
+		Port    int    `mapstructure:"port"`
 	} `mapstructure:"grpc"`
 	MessageQueue struct {
-		Engine     string `mapstructure:"engine" validate:"oneof=redis nats nsq"`
-		Topic      string `mapstructure:"topic" validate:"alphanum"`
-		QueueGroup string `mapstructure:"queue_group" validate:"alphanum"`
+		Engine     MessageQueueEngine `mapstructure:"engine" validate:"oneof=redis nats"`
+		Topic      string             `mapstructure:"topic" validate:"alphanum"`
+		QueueGroup string             `mapstructure:"queue_group" validate:"alphanum"`
 		Redis      struct {
 			Cluster  bool   `mapstructure:"cluster"`
 			Addr     string `mapstructure:"addr"`
@@ -51,7 +70,8 @@ func (c *Config) SetDefault() {
 	c.NoOfWorker = runtime.NumCPU()
 	c.Enabled = true
 	c.Port = 3000
-	c.GRPC.Port = 9000
+	c.Monitor.Port = 3222
+	c.GRPC.Port = 5222
 	c.MessageQueue.Redis.Addr = "localhost:6379"
 	c.MessageQueue.NATS.JetStream = true
 }

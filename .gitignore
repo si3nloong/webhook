@@ -8,3 +8,10 @@ node_modules
 .DS_Store
 public
 coverage.txt
+package-lock.json
+pnpm-lock.yaml
+.DS_Store
+node_modules
+/build
+/.svelte-kit
+/package
