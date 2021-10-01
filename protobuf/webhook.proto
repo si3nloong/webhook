@@ -45,6 +45,8 @@ message SendWebhookRequest {
   }
   RetryMechanism retryMechanism = 6;
   uint32 timeout = 7;
+  // @gotags: validate:"lte=3"
+  uint32 concurrent = 8;
 }
 
 message SendWebhookResponse {
