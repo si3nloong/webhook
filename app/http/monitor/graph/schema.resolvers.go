@@ -11,7 +11,7 @@ import (
 	"github.com/si3nloong/webhook/app/http/monitor/transformer"
 )
 
-func (r *queryResolver) Logs(ctx context.Context, after *string, before *string, first *uint, last *uint) (*model.LogConnection, error) {
+func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *string, first *uint, last *uint, filter *string) (*model.WebhookConnection, error) {
 	limit := uint(100)
 	if first != nil {
 		limit = *first
@@ -24,16 +24,16 @@ func (r *queryResolver) Logs(ctx context.Context, after *string, before *string,
 		return nil, err
 	}
 
-	return transformer.ToLogConnection(datas), nil
+	return transformer.ToWebhookConnection(datas), nil
 }
 
-func (r *queryResolver) Log(ctx context.Context, id string) (*model.Log, error) {
+func (r *queryResolver) Webhook(ctx context.Context, id string) (*model.Webhook, error) {
 	data, err := r.FindLog(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return transformer.ToLog(data), nil
+	return transformer.ToWebhook(data), nil
 }
 
 // Query returns generated.QueryResolver implementation.

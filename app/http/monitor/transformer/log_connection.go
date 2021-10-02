@@ -5,24 +5,24 @@ import (
 	"github.com/si3nloong/webhook/app/http/monitor/graph/model"
 )
 
-func ToLogConnection(in []*entity.WebhookRequest) (conn *model.LogConnection) {
-	conn = new(model.LogConnection)
+func ToWebhookConnection(in []*entity.WebhookRequest) (conn *model.WebhookConnection) {
+	conn = new(model.WebhookConnection)
 	conn.Nodes = ToLogs(in)
 	conn.PageInfo = new(model.PageInfo)
 	conn.TotalCount = 100
 	return
 }
 
-func ToLogs(in []*entity.WebhookRequest) (out []*model.Log) {
-	out = make([]*model.Log, len(in))
+func ToLogs(in []*entity.WebhookRequest) (out []*model.Webhook) {
+	out = make([]*model.Webhook, len(in))
 	for idx := range in {
-		out[idx] = ToLog(in[idx])
+		out[idx] = ToWebhook(in[idx])
 	}
 	return
 }
 
-func ToLog(in *entity.WebhookRequest) (out *model.Log) {
-	out = new(model.Log)
+func ToWebhook(in *entity.WebhookRequest) (out *model.Webhook) {
+	out = new(model.Webhook)
 	out.ID = in.ID.String()
 	out.URL = in.URL
 	out.Method = model.HTTPMethod(in.Method)

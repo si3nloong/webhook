@@ -1,34 +1,29 @@
 <script lang="ts">
-  import { ApolloClient, InMemoryCache, gql, useQuery } from "@apollo/client";
+  import { ApolloClient, InMemoryCache } from "@apollo/client";
+  import { setClient, query } from "svelte-apollo";
+  import { GET_WEBHOOKS } from "./queries";
 
   const cache = new InMemoryCache();
 
   const client = new ApolloClient({
     // Provide required constructor fields
     cache: cache,
-    uri: "http://localhost:8080/",
-
-    // Provide some optional constructor fields
+    uri: "http://localhost:8080",
     name: "webhook-client",
     version: "1.0",
     queryDeduplication: false,
-    defaultOptions: {
-      watchQuery: {
-        fetchPolicy: "cache-and-network",
-      },
-    },
+    // defaultOptions: {
+    //   watchQuery: {
+    //     fetchPolicy: "cache-and-network",
+    //   },
+    // },
   });
 
-  const GET_DOGS = gql`
-    query GetDogs {
-      dogs {
-        id
-        breed
-      }
-    }
-  `;
+  setClient(client);
 
-  console.log(useQuery(GET_DOGS));
+  const books = query(GET_WEBHOOKS);
+
+  console.log($books);
 
   console.log(client);
   export let name: string;
