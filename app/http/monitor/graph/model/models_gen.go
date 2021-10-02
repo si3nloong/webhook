@@ -14,7 +14,14 @@ type HTTPHeader struct {
 	Value string `json:"value"`
 }
 
-type Log struct {
+type PageInfo struct {
+	HasNextPage     bool    `json:"hasNextPage"`
+	HasPreviousPage bool    `json:"hasPreviousPage"`
+	StartCursor     *string `json:"startCursor"`
+	EndCursor       *string `json:"endCursor"`
+}
+
+type Webhook struct {
 	ID        string        `json:"id"`
 	URL       string        `json:"url"`
 	Method    HTTPMethod    `json:"method"`
@@ -26,20 +33,13 @@ type Log struct {
 	UpdatedAt time.Time     `json:"updatedAt"`
 }
 
-type LogConnection struct {
+type WebhookConnection struct {
 	// A list of nodes.
-	Nodes []*Log `json:"nodes"`
+	Nodes []*Webhook `json:"nodes"`
 	// Information to aid in pagination.
 	PageInfo *PageInfo `json:"pageInfo"`
 	// Identifies the total count of items in the connection.
 	TotalCount uint64 `json:"totalCount"`
-}
-
-type PageInfo struct {
-	HasNextPage     bool    `json:"hasNextPage"`
-	HasPreviousPage bool    `json:"hasPreviousPage"`
-	StartCursor     *string `json:"startCursor"`
-	EndCursor       *string `json:"endCursor"`
 }
 
 type HTTPMethod string

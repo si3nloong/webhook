@@ -19,10 +19,12 @@ require (
 	github.com/adjust/rmq/v4 v4.0.1
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.15.0
+	github.com/go-chi/chi v1.5.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
 	github.com/nsqio/go-nsq v1.0.8
+	github.com/rs/cors v1.8.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.9.1

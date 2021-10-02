@@ -10,5 +10,9 @@ updates:
     target-branch: "dev"
     schedule:
       interval: daily
-      # time: "21:00"
-    # open-pull-requests-limit: 10
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    target-branch: "dev"
+    schedule:
+      interval: "daily"

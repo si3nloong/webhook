@@ -4,6 +4,7 @@
 scalar Uint
 scalar Uint64
 scalar DateTime
+scalar Filter
 
 schema {
   query: Query
@@ -24,22 +25,27 @@ type PageInfo {
 
 type Query {
   """
-  Get logs
+  Get webhooks
   """
-  logs(
+  webhooks(
     after: ID
     before: ID
     first: Uint @validate(rule: "omitempty,required,min=1,max=100")
     last: Uint @validate(rule: "omitempty,required,min=1,max=100")
-  ): LogConnection!
-  log(id: ID!): Log
+    filter: Filter
+  ): WebhookConnection!
+
+  """
+  Find webhook by id
+  """
+  webhook(id: ID!): Webhook
 }
 
-type LogConnection {
+type WebhookConnection {
   """
   A list of nodes.
   """
-  nodes: [Log!]!
+  nodes: [Webhook!]!
   """
   Information to aid in pagination.
   """
@@ -50,7 +56,7 @@ type LogConnection {
   totalCount: Uint64!
 }
 
-type Log {
+type Webhook {
   id: ID!
   url: String!
   method: HttpMethod!
