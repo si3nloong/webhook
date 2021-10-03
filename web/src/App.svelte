@@ -1,7 +1,9 @@
 <script lang="ts">
   import { ApolloClient, InMemoryCache } from "@apollo/client";
   import { setClient, query } from "svelte-apollo";
+  import dayjs from "dayjs";
   import { GET_WEBHOOKS } from "./queries";
+  import type { Webhook } from "./queries";
 
   const cache = new InMemoryCache();
 
@@ -21,20 +23,29 @@
 
   setClient(client);
 
-  const books = query(GET_WEBHOOKS);
+  const webhooks = query<{ webhooks: { nodes: [Webhook] } }>(GET_WEBHOOKS);
 
-  console.log($books);
+  console.log($webhooks);
 
   console.log(client);
   export let name: string;
 </script>
 
 <main>
-  <h1>Hello {name}!</h1>
-  <p>
-    Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn
-    how to build Svelte apps.
-  </p>
+  {#if $webhooks.loading}
+    <div>Loading...</div>
+  {:else if $webhooks.data}
+    <table>
+      {#each $webhooks.data.webhooks.nodes as item}
+        <tr>
+          <td>{item.id}</td>
+          <td>{item.method}</td>
+          <td>{item.url}</td>
+          <td>{dayjs(item.createdAt).format("YYYY MMM DD")}</td>
+        </tr>
+      {/each}
+    </table>
+  {/if}
 </main>
 
 <style>
