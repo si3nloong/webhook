@@ -63,7 +63,7 @@ type Webhook {
   headers: [HttpHeader!]!
   body: String!
   retries: Uint!
-  success: Boolean!
+  status: WebhookStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -73,10 +73,18 @@ enum HttpMethod {
   POST
   PUT
   PATCH
+  DELETE
+  HEAD
   OPTIONS
 }
 
 type HttpHeader {
   key: String!
   value: String!
+}
+
+enum WebhookStatus {
+  SUCCESS
+  FAILED
+  EXPIRED
 }

@@ -19,7 +19,7 @@ func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *str
 		limit = *last
 	}
 
-	datas, _, err := r.GetLogs(ctx, "", limit)
+	datas, _, err := r.GetWebhooks(ctx, "", limit)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *str
 }
 
 func (r *queryResolver) Webhook(ctx context.Context, id string) (*model.Webhook, error) {
-	data, err := r.FindLog(ctx, id)
+	data, err := r.FindWebhook(ctx, id)
 	if err != nil {
 		return nil, err
 	}

@@ -70,7 +70,7 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		Method    func(childComplexity int) int
 		Retries   func(childComplexity int) int
-		Success   func(childComplexity int) int
+		Status    func(childComplexity int) int
 		URL       func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
@@ -210,12 +210,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Webhook.Retries(childComplexity), true
 
-	case "Webhook.success":
-		if e.complexity.Webhook.Success == nil {
+	case "Webhook.status":
+		if e.complexity.Webhook.Status == nil {
 			break
 		}
 
-		return e.complexity.Webhook.Success(childComplexity), true
+		return e.complexity.Webhook.Status(childComplexity), true
 
 	case "Webhook.url":
 		if e.complexity.Webhook.URL == nil {
@@ -367,7 +367,7 @@ type Webhook {
   headers: [HttpHeader!]!
   body: String!
   retries: Uint!
-  success: Boolean!
+  status: WebhookStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -377,12 +377,20 @@ enum HttpMethod {
   POST
   PUT
   PATCH
+  DELETE
+  HEAD
   OPTIONS
 }
 
 type HttpHeader {
   key: String!
   value: String!
+}
+
+enum WebhookStatus {
+  SUCCESS
+  FAILED
+  EXPIRED
 }
 `, BuiltIn: false},
 }
@@ -1130,7 +1138,7 @@ func (ec *executionContext) _Webhook_retries(ctx context.Context, field graphql.
 	return ec.marshalNUint2uint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Webhook_success(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
+func (ec *executionContext) _Webhook_status(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1148,7 +1156,7 @@ func (ec *executionContext) _Webhook_success(ctx context.Context, field graphql.
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Success, nil
+		return obj.Status, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1160,9 +1168,9 @@ func (ec *executionContext) _Webhook_success(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(model.WebhookStatus)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Webhook_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
@@ -2634,8 +2642,8 @@ func (ec *executionContext) _Webhook(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "success":
-			out.Values[i] = ec._Webhook_success(ctx, field, obj)
+		case "status":
+			out.Values[i] = ec._Webhook_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3177,6 +3185,16 @@ func (ec *executionContext) marshalNWebhookConnection2ᚖgithubᚗcomᚋsi3nloon
 		return graphql.Null
 	}
 	return ec._WebhookConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookStatus(ctx context.Context, v interface{}) (model.WebhookStatus, error) {
+	var res model.WebhookStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookStatus(ctx context.Context, sel ast.SelectionSet, v model.WebhookStatus) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

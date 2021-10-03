@@ -28,7 +28,7 @@ type Webhook struct {
 	Headers   []*HTTPHeader `json:"headers"`
 	Body      string        `json:"body"`
 	Retries   uint          `json:"retries"`
-	Success   bool          `json:"success"`
+	Status    WebhookStatus `json:"status"`
 	CreatedAt time.Time     `json:"createdAt"`
 	UpdatedAt time.Time     `json:"updatedAt"`
 }
@@ -49,6 +49,8 @@ const (
 	HTTPMethodPost    HTTPMethod = "POST"
 	HTTPMethodPut     HTTPMethod = "PUT"
 	HTTPMethodPatch   HTTPMethod = "PATCH"
+	HTTPMethodDelete  HTTPMethod = "DELETE"
+	HTTPMethodHead    HTTPMethod = "HEAD"
 	HTTPMethodOptions HTTPMethod = "OPTIONS"
 )
 
@@ -57,12 +59,14 @@ var AllHTTPMethod = []HTTPMethod{
 	HTTPMethodPost,
 	HTTPMethodPut,
 	HTTPMethodPatch,
+	HTTPMethodDelete,
+	HTTPMethodHead,
 	HTTPMethodOptions,
 }
 
 func (e HTTPMethod) IsValid() bool {
 	switch e {
-	case HTTPMethodGet, HTTPMethodPost, HTTPMethodPut, HTTPMethodPatch, HTTPMethodOptions:
+	case HTTPMethodGet, HTTPMethodPost, HTTPMethodPut, HTTPMethodPatch, HTTPMethodDelete, HTTPMethodHead, HTTPMethodOptions:
 		return true
 	}
 	return false
@@ -86,5 +90,48 @@ func (e *HTTPMethod) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HTTPMethod) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type WebhookStatus string
+
+const (
+	WebhookStatusSuccess WebhookStatus = "SUCCESS"
+	WebhookStatusFailed  WebhookStatus = "FAILED"
+	WebhookStatusExpired WebhookStatus = "EXPIRED"
+)
+
+var AllWebhookStatus = []WebhookStatus{
+	WebhookStatusSuccess,
+	WebhookStatusFailed,
+	WebhookStatusExpired,
+}
+
+func (e WebhookStatus) IsValid() bool {
+	switch e {
+	case WebhookStatusSuccess, WebhookStatusFailed, WebhookStatusExpired:
+		return true
+	}
+	return false
+}
+
+func (e WebhookStatus) String() string {
+	return string(e)
+}
+
+func (e *WebhookStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = WebhookStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid WebhookStatus", str)
+	}
+	return nil
+}
+
+func (e WebhookStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -30,9 +30,9 @@ fire webhook ---> record stat (add success count or log error)
 */
 
 type Repository interface {
-	InsertLog(ctx context.Context, data *entity.WebhookRequest) error
-	GetLogs(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error)
-	FindLog(ctx context.Context, id string) (*entity.WebhookRequest, error)
+	CreateWebhook(ctx context.Context, data *entity.WebhookRequest) error
+	GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error)
+	FindWebhook(ctx context.Context, id string) (*entity.WebhookRequest, error)
 }
 
 type MessageQueue interface {
@@ -108,7 +108,7 @@ func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest)
 	data.Body = req.Body
 	data.Headers = req.Headers
 
-	if err := s.InsertLog(ctx, &data); err != nil {
+	if err := s.CreateWebhook(ctx, &data); err != nil {
 		return err
 	}
 

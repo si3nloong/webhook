@@ -1,5 +1,10 @@
 {
+  // "rootDir": "web/src",
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["web/src/**/*"],
-  "exclude": ["node_modules/*", "__sapper__/*", "web/public/*"]
+  "exclude": ["__sapper__/*", "web/public/*"],
+  "include": [
+    "web/src/**/*",
+    "node_modules/svelte-history-router/src/**/*",
+    "**/*.ts"
+  ]
 }

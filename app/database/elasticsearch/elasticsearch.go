@@ -54,17 +54,39 @@ func New(cfg cmd.Config) (*db, error) {
 	return v, nil
 }
 
-func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error) {
-	ctx, cancel := context.WithTimeout(ctx, c.timeout)
-	defer cancel()
+func (c *db) Incr(ctx context.Context, id string) error {
+	var buf bytes.Buffer
+	buf.WriteString(`{
+		"script" : {
+			"source": "ctx._source.counter += params.count",
+			"lang": "painless",
+			"params" : {
+				"count" : 1
+			}
+		}
+	}`)
+	res, err := c.client.Update(
+		c.indexName,
+		id,
+		&buf,
+		c.client.Update.WithContext(ctx),
+		c.client.Update.WithPretty(),
+	)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
 
+	return nil
+}
+
+func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error) {
 	var buf bytes.Buffer
 	res, err := c.client.Search(
 		c.client.Search.WithContext(ctx),
 		c.client.Search.WithIndex(c.indexName),
 		c.client.Search.WithBody(&buf),
 		c.client.Search.WithTrackTotalHits(true),
-		c.client.Search.WithPretty(),
 	)
 	if err != nil {
 		return nil, "", err
@@ -91,15 +113,12 @@ func (c *db) GetLogs(ctx context.Context, curCursor string, limit uint) (datas [
 	return
 }
 
-func (c *db) FindLog(ctx context.Context, id string) (data *entity.WebhookRequest, err error) {
+func (c *db) FindWebhook(ctx context.Context, id string) (data *entity.WebhookRequest, err error) {
 	// Instantiate a request object
 	req := esapi.GetRequest{
 		Index:      c.indexName,
 		DocumentID: id,
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, c.timeout)
-	defer cancel()
 
 	res, err := req.Do(ctx, c.client)
 	if err != nil {
@@ -116,7 +135,7 @@ func (c *db) FindLog(ctx context.Context, id string) (data *entity.WebhookReques
 	return
 }
 
-func (c *db) InsertLog(ctx context.Context, data *entity.WebhookRequest) error {
+func (c *db) CreateWebhook(ctx context.Context, data *entity.WebhookRequest) error {
 	blr := new(bytes.Buffer)
 
 	nilTime := time.Time{}
@@ -141,9 +160,6 @@ func (c *db) InsertLog(ctx context.Context, data *entity.WebhookRequest) error {
 		Body:       blr,
 		Refresh:    "true",
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, c.timeout)
-	defer cancel()
 
 	res, err := req.Do(ctx, c.client)
 	if err != nil {
