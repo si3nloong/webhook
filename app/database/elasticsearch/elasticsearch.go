@@ -102,9 +102,11 @@ func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (dat
 
 	for _, r := range result {
 		data := entity.WebhookRequest{}
-		if err := json.Unmarshal([]byte(r.Get("_source").Raw), &data); err != nil {
-			return nil, "", err
+		err = json.Unmarshal([]byte(r.Get("_source").Raw), &data)
+		if err != nil {
+			return
 		}
+
 		datas = append(datas, &data)
 	}
 	return
@@ -159,11 +161,9 @@ func (c *db) CreateWebhook(ctx context.Context, data *entity.WebhookRequest) err
 		Refresh:    "true",
 	}
 
-	res, err := req.Do(ctx, c.client)
-	if err != nil {
+	if _, err := req.Do(ctx, c.client); err != nil {
 		return err
 	}
-	defer res.Body.Close()
 
 	return nil
 }
