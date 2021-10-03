@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Server) SendWebhook(ctx context.Context, req *proto.SendWebhookRequest) (*proto.SendWebhookResponse, error) {
-	if err := s.Validate(ctx, req); err != nil {
+	if err := s.Validate(req); err != nil {
 		return nil, status.Convert(err).Err()
 	}
 

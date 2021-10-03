@@ -44,18 +44,19 @@ message_queue:
 
 ## ✨ Features
 
-- Support [YAML](https://yaml.org/) and [env](https://en.wikipedia.org/wiki/Env) configuration
+- Support [YAML](https://yaml.org/) and [env](https://en.wikipedia.org/wiki/Env) configuration.
 - Support retry send webhook if the response is fail.
-- [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API ready
-- Support [gRPC](https://grpc.io/) protocol
+- [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API ready.
+- [GraphQL](https://graphql.org/) API ready.
+- Support [gRPC](https://grpc.io/) protocol.
 - Support tracing, [Jaeger](https://github.com/jaegertracing/jaeger), [OpenCensus](https://opencensus.io/)
 - Allow to send a webhook using [cURL](https://curl.se/) command
-- Support Redis, NATS, NSQ as [message queue](https://en.wikipedia.org/wiki/Message_queue) engine
-- Log every possible error to persistent volume
-- CLI ready
-- Dockerize
-- Configurable
-- Kubernetes ready
+- Support Redis, NATS, NSQ as [Message Queue](https://en.wikipedia.org/wiki/Message_queue) engine.
+- Support MongoDB, Elasticsearch as Persistent Volume engine.
+- CLI ready.
+- Dockerize.
+- Configurable.
+- Kubernetes ready.
 
 ## ⚡️ RESTful APIs
 

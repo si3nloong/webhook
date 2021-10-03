@@ -3,7 +3,6 @@ module github.com/si3nloong/webhook
 go 1.15
 
 require (
-	github.com/fasthttp/router v1.4.3
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/nats-io/nats.go v1.12.3
@@ -19,8 +18,8 @@ require (
 	github.com/adjust/rmq/v4 v4.0.1
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.15.0
-	github.com/go-chi/chi v1.5.4
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
 	github.com/nsqio/go-nsq v1.0.8

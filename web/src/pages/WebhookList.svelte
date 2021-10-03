@@ -41,7 +41,7 @@
     <div><input name="endDate" type="date" /></div>
     <div><input name="endTime" type="time" /></div>
     <div>Limit Results</div>
-    <div><input name="limit" type="number" pattern="[0-9]+" /></div>
+    <div><input name="limit" type="number" pattern="[0-9]+" value="50" /></div>
     <button type="submit">Filter</button>
   </form>
 </section>

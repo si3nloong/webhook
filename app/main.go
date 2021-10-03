@@ -4,20 +4,20 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/fasthttp/router"
 	validator "github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 
 	rpc "github.com/si3nloong/webhook/app/grpc"
-	rest "github.com/si3nloong/webhook/app/http/api"
+	restful "github.com/si3nloong/webhook/app/http/restful"
 	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/app/util"
 	"github.com/si3nloong/webhook/cmd"
 	"github.com/spf13/viper"
-	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
 )
 
@@ -71,33 +71,13 @@ func main() {
 	// serve HTTP
 	if cfg.Enabled {
 		go func() error {
-			svr := rest.NewServer(ws)
-			httpServer := router.New()
-			httpServer.GET("/health", svr.Health)
-			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
-			log.Printf("HTTP/RESTful server serve at %v", cfg.Port)
+			r := mux.NewRouter()
+			svr := restful.NewServer(ws)
+			r.HandleFunc("/", svr.Health)
+			r.HandleFunc("/v1/webhook/send", svr.SendWebhook).Methods("POST")
 
-			if err := fasthttp.ListenAndServe(util.FormatPort(cfg.Port), httpServer.Handler); err != nil {
-				return err
-			}
-
-			return nil
-		}()
-	}
-
-	// serve HTTP
-	if cfg.Monitor.Enabled {
-		go func() error {
-			svr := rest.NewServer(ws)
-			httpServer := router.New()
-			httpServer.GET("/health", svr.Health)
-			httpServer.POST("/v1/webhook/send", svr.SendWebhook)
-			log.Printf("Monitor server serve at %v", cfg.Monitor.Port)
-
-			if err := fasthttp.ListenAndServe(util.FormatPort(cfg.Port), httpServer.Handler); err != nil {
-				return err
-			}
-
+			log.Printf("HTTP server serve at %v", cfg.Port)
+			log.Fatal(http.ListenAndServe(util.FormatPort(cfg.Port), r))
 			return nil
 		}()
 	}

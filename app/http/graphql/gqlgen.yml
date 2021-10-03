@@ -35,7 +35,7 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "github.com/si3nloong/webhook/app/http/monitor/graph/model"
+  - "github.com/si3nloong/webhook/app/http/graphql/graph/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -55,8 +55,8 @@ models:
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
   Uint:
-    model: github.com/si3nloong/webhook/app/http/monitor/graph/scalar.Uint
+    model: github.com/si3nloong/webhook/app/http/graphql/graph/scalar.Uint
   Uint64:
-    model: github.com/si3nloong/webhook/app/http/monitor/graph/scalar.Uint64
+    model: github.com/si3nloong/webhook/app/http/graphql/graph/scalar.Uint64
   DateTime:
     model: github.com/99designs/gqlgen/graphql.Time

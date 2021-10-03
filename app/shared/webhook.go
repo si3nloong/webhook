@@ -40,7 +40,7 @@ type MessageQueue interface {
 }
 
 type WebhookServer interface {
-	Validate(ctx context.Context, src interface{}) error
+	Validate(src interface{}) error
 	SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) error
 	Repository
 	MessageQueue
@@ -96,8 +96,8 @@ func NewServer(cfg cmd.Config) WebhookServer {
 	return svr
 }
 
-func (s *webhookServer) Validate(ctx context.Context, src interface{}) error {
-	return s.v.StructCtx(ctx, src)
+func (s *webhookServer) Validate(src interface{}) error {
+	return s.v.Struct(src)
 }
 
 func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
@@ -139,62 +139,62 @@ func (s *webhookServer) SendWebhook(ctx context.Context, req *pb.SendWebhookRequ
 	// 	})
 	// }
 
-	err := retry.Do(
-		func() error {
-			httpReq := fasthttp.AcquireRequest()
-			httpResp := fasthttp.AcquireResponse()
-			defer fasthttp.ReleaseRequest(httpReq)
-			defer fasthttp.ReleaseResponse(httpResp)
-			httpReq.Header.SetRequestURI(req.Url)
-			httpReq.Header.SetMethod(req.Method.String())
+	// err := retry.Do(
+	// 	func() error {
+	httpReq := fasthttp.AcquireRequest()
+	httpResp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseRequest(httpReq)
+	defer fasthttp.ReleaseResponse(httpResp)
+	httpReq.Header.SetRequestURI(req.Url)
+	httpReq.Header.SetMethod(req.Method.String())
 
-			for k, v := range req.Headers {
-				httpReq.Header.Add(k, v)
-			}
-			httpReq.AppendBodyString(req.Body)
+	for k, v := range req.Headers {
+		httpReq.Header.Add(k, v)
+	}
+	httpReq.AppendBodyString(req.Body)
 
-			// By default timeout is 5 seconds
-			timeout := 5 * time.Second
-			if req.Timeout > 0 {
-				timeout = time.Second * time.Duration(req.Timeout)
-			}
+	// By default timeout is 5 seconds
+	timeout := 5 * time.Second
+	if req.Timeout > 0 {
+		timeout = time.Second * time.Duration(req.Timeout)
+	}
 
-			log.Println("Request =======>")
-			log.Println(httpReq.String())
+	log.Println("Request =======>")
+	log.Println(httpReq.String())
 
-			var dnsError *net.DNSError
-			if err := fasthttp.DoTimeout(httpReq, httpResp, timeout); errors.As(err, &dnsError) {
-				// If it's a invalid host, drop the request directly
-				return retry.Unrecoverable(err)
-			} else if err != nil {
-				return err
-			}
-
-			log.Println("Response =======>")
-			log.Println(httpResp.String())
-			statusCode := httpResp.StatusCode()
-
-			// 100 - 199
-			if statusCode < fasthttp.StatusOK {
-				log.Println("100 - 199")
-				// 500
-			} else if statusCode >= fasthttp.StatusInternalServerError {
-				log.Println("500")
-				return &requestError{body: httpResp.String()}
-				// 400
-			} else if statusCode >= fasthttp.StatusBadRequest {
-				log.Println("400")
-			}
-
-			return nil
-		},
-		opts...,
-	)
-	if err != nil {
-		log.Println("Error here =>", err)
-		// s.LogError(ctx,, req, err)
+	var dnsError *net.DNSError
+	if err := fasthttp.DoTimeout(httpReq, httpResp, timeout); errors.As(err, &dnsError) {
+		// If it's a invalid host, drop the request directly
+		return retry.Unrecoverable(err)
+	} else if err != nil {
 		return err
 	}
+
+	log.Println("Response =======>")
+	log.Println(httpResp.String())
+	statusCode := httpResp.StatusCode()
+
+	// 100 - 199
+	if statusCode < fasthttp.StatusOK {
+		log.Println("100 - 199")
+		// 500
+	} else if statusCode >= fasthttp.StatusInternalServerError {
+		log.Println("500")
+		return &requestError{body: httpResp.String()}
+		// 400
+	} else if statusCode >= fasthttp.StatusBadRequest {
+		log.Println("400")
+	}
+
+	// 		return nil
+	// 	},
+	// 	opts...,
+	// )
+	// if err != nil {
+	// 	log.Println("Error here =>", err)
+	// 	// s.LogError(ctx,, req, err)
+	// 	return err
+	// }
 
 	// if err := s.Incr(ctx, metric.StatTypeSucceed); err != nil {
 	// 	return err

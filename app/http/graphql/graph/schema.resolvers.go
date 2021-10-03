@@ -6,9 +6,9 @@ package graph
 import (
 	"context"
 
-	"github.com/si3nloong/webhook/app/http/monitor/graph/generated"
-	"github.com/si3nloong/webhook/app/http/monitor/graph/model"
-	"github.com/si3nloong/webhook/app/http/monitor/transformer"
+	"github.com/si3nloong/webhook/app/http/graphql/graph/generated"
+	"github.com/si3nloong/webhook/app/http/graphql/graph/model"
+	"github.com/si3nloong/webhook/app/http/graphql/transformer"
 )
 
 func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *string, first *uint, last *uint, filter *string) (*model.WebhookConnection, error) {

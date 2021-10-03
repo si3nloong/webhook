@@ -94,12 +94,10 @@ func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (dat
 	defer res.Body.Close()
 
 	buf.Reset()
-
 	if _, err := buf.ReadFrom(res.Body); err != nil {
 		return nil, "", err
 	}
 
-	log.Println(buf.String())
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
 
 	for _, r := range result {
@@ -109,7 +107,6 @@ func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (dat
 		}
 		datas = append(datas, &data)
 	}
-
 	return
 }
 
@@ -126,12 +123,13 @@ func (c *db) FindWebhook(ctx context.Context, id string) (data *entity.WebhookRe
 	}
 	defer res.Body.Close()
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(res.Body)
-
-	log.Println(buf.String())
+	var o struct {
+		Source interface{} `json:"_source"`
+	}
 
 	data = new(entity.WebhookRequest)
+	o.Source = data
+	err = json.NewDecoder(res.Body).Decode(&o)
 	return
 }
 

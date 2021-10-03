@@ -10,5 +10,6 @@ type Server struct {
 
 func NewServer(ws shared.WebhookServer) *Server {
 	svr := new(Server)
+	svr.WebhookServer = ws
 	return svr
 }

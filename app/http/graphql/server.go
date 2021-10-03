@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/si3nloong/webhook/app/http/monitor/graph"
-	"github.com/si3nloong/webhook/app/http/monitor/graph/generated"
+	"github.com/si3nloong/webhook/app/http/graphql/graph"
+	"github.com/si3nloong/webhook/app/http/graphql/graph/generated"
 	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/cmd"
 	"github.com/spf13/viper"
@@ -51,11 +51,11 @@ func main() {
 
 	ws := shared.NewServer(cfg)
 
-	router := chi.NewRouter()
+	r := mux.NewRouter()
 
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
-	router.Use(cors.New(cors.Options{
+	r.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
 		AllowedHeaders: []string{
@@ -63,14 +63,13 @@ func main() {
 			"Apollographql-Client-Version",
 			"Content-Type",
 		},
-		Debug: true,
 	}).Handler)
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{WebhookServer: ws}}))
 
 	// http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/", srv)
+	r.Handle("/", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }

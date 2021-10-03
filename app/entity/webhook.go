@@ -21,10 +21,8 @@ type WebhookRequest struct {
 	Method    string               `json:"method"`
 	Headers   map[string]string    `json:"headers"`
 	Body      string               `json:"body"`
-	Retries   uint                 `json:"retries"`
+	Retries   []Retry              `json:"retries"`
 	Status    WebhookRequestStatus `json:"status"`
 	CreatedAt time.Time            `json:"createdAt"`
 	UpdatedAt time.Time            `json:"updatedAt"`
-	// Timeout    time.Duration        `json:"duration"`
-	// Concurrent uint                 `json:"concurrent"`
 }
