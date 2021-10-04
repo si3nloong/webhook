@@ -2,15 +2,15 @@ package grpc
 
 import (
 	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/si3nloong/webhook/app/grpc/proto"
 	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/cmd"
+	pb "github.com/si3nloong/webhook/protobuf"
 	"google.golang.org/grpc"
 )
 
 type Server struct {
-	shared.WebhookServer
-	proto.UnimplementedCurlHookServiceServer
+	ws shared.WebhookServer
+	pb.UnimplementedWebhookServiceServer
 }
 
 func NewServer(cfg cmd.Config, ws shared.WebhookServer) *grpc.Server {
@@ -20,7 +20,7 @@ func NewServer(cfg cmd.Config, ws shared.WebhookServer) *grpc.Server {
 	}
 
 	grpcServer := grpc.NewServer(opts...)
-	svr := Server{WebhookServer: ws}
-	proto.RegisterCurlHookServiceServer(grpcServer, &svr)
+	svr := &Server{ws: ws}
+	pb.RegisterWebhookServiceServer(grpcServer, svr)
 	return grpcServer
 }

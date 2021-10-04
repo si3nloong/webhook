@@ -12,12 +12,13 @@ import (
 	"github.com/avast/retry-go/v3"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/segmentio/ksuid"
 	es "github.com/si3nloong/webhook/app/database/elasticsearch"
 	"github.com/si3nloong/webhook/app/entity"
-	pb "github.com/si3nloong/webhook/app/grpc/proto"
 	"github.com/si3nloong/webhook/app/mq/nats"
 	"github.com/si3nloong/webhook/app/mq/redis"
 	"github.com/si3nloong/webhook/cmd"
+	pb "github.com/si3nloong/webhook/protobuf"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/protobuf/proto"
 )
@@ -101,12 +102,17 @@ func (s *webhookServer) Validate(src interface{}) error {
 }
 
 func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
+	utcNow := time.Now().UTC()
 	// may be we store into database first before publish to message queue
 	data := entity.WebhookRequest{}
-	data.Method = req.Method.String()
+	data.ID = ksuid.New()
 	data.URL = req.Url
-	data.Body = req.Body
+	data.Method = req.Method.String()
 	data.Headers = req.Headers
+	data.Body = req.Body
+	data.Status = entity.WebhookRequestPending
+	data.CreatedAt = utcNow
+	data.UpdatedAt = utcNow
 
 	if err := s.CreateWebhook(ctx, &data); err != nil {
 		return err

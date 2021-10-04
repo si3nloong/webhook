@@ -20,10 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 type WebhookServiceClient interface {
 	Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (WebhookService_WatchClient, error)
+	ListWebhooks(ctx context.Context, in *ListWebhooksRequest, opts ...grpc.CallOption) (*ListWebhooksResponse, error)
+	GetWebhook(ctx context.Context, in *GetWebhookRequest, opts ...grpc.CallOption) (*GetWebhookResponse, error)
 	SendWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error)
-	GetWebhooks(ctx context.Context, in *GetWebhooksRequest, opts ...grpc.CallOption) (WebhookService_GetWebhooksClient, error)
-	FindWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error)
-	RetryWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error)
 }
 
 type webhookServiceClient struct {
@@ -75,59 +74,27 @@ func (x *webhookServiceWatchClient) Recv() (*HealthCheckResponse, error) {
 	return m, nil
 }
 
+func (c *webhookServiceClient) ListWebhooks(ctx context.Context, in *ListWebhooksRequest, opts ...grpc.CallOption) (*ListWebhooksResponse, error) {
+	out := new(ListWebhooksResponse)
+	err := c.cc.Invoke(ctx, "/protobuf.WebhookService/ListWebhooks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webhookServiceClient) GetWebhook(ctx context.Context, in *GetWebhookRequest, opts ...grpc.CallOption) (*GetWebhookResponse, error) {
+	out := new(GetWebhookResponse)
+	err := c.cc.Invoke(ctx, "/protobuf.WebhookService/GetWebhook", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *webhookServiceClient) SendWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error) {
 	out := new(SendWebhookResponse)
 	err := c.cc.Invoke(ctx, "/protobuf.WebhookService/SendWebhook", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *webhookServiceClient) GetWebhooks(ctx context.Context, in *GetWebhooksRequest, opts ...grpc.CallOption) (WebhookService_GetWebhooksClient, error) {
-	stream, err := c.cc.NewStream(ctx, &WebhookService_ServiceDesc.Streams[1], "/protobuf.WebhookService/GetWebhooks", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &webhookServiceGetWebhooksClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type WebhookService_GetWebhooksClient interface {
-	Recv() (*GetWebhooksResponse, error)
-	grpc.ClientStream
-}
-
-type webhookServiceGetWebhooksClient struct {
-	grpc.ClientStream
-}
-
-func (x *webhookServiceGetWebhooksClient) Recv() (*GetWebhooksResponse, error) {
-	m := new(GetWebhooksResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *webhookServiceClient) FindWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error) {
-	out := new(SendWebhookResponse)
-	err := c.cc.Invoke(ctx, "/protobuf.WebhookService/FindWebhook", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *webhookServiceClient) RetryWebhook(ctx context.Context, in *SendWebhookRequest, opts ...grpc.CallOption) (*SendWebhookResponse, error) {
-	out := new(SendWebhookResponse)
-	err := c.cc.Invoke(ctx, "/protobuf.WebhookService/RetryWebhook", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +107,9 @@ func (c *webhookServiceClient) RetryWebhook(ctx context.Context, in *SendWebhook
 type WebhookServiceServer interface {
 	Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	Watch(*HealthCheckRequest, WebhookService_WatchServer) error
+	ListWebhooks(context.Context, *ListWebhooksRequest) (*ListWebhooksResponse, error)
+	GetWebhook(context.Context, *GetWebhookRequest) (*GetWebhookResponse, error)
 	SendWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error)
-	GetWebhooks(*GetWebhooksRequest, WebhookService_GetWebhooksServer) error
-	FindWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error)
-	RetryWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error)
 	mustEmbedUnimplementedWebhookServiceServer()
 }
 
@@ -157,17 +123,14 @@ func (UnimplementedWebhookServiceServer) Check(context.Context, *HealthCheckRequ
 func (UnimplementedWebhookServiceServer) Watch(*HealthCheckRequest, WebhookService_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
 }
+func (UnimplementedWebhookServiceServer) ListWebhooks(context.Context, *ListWebhooksRequest) (*ListWebhooksResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListWebhooks not implemented")
+}
+func (UnimplementedWebhookServiceServer) GetWebhook(context.Context, *GetWebhookRequest) (*GetWebhookResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWebhook not implemented")
+}
 func (UnimplementedWebhookServiceServer) SendWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendWebhook not implemented")
-}
-func (UnimplementedWebhookServiceServer) GetWebhooks(*GetWebhooksRequest, WebhookService_GetWebhooksServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetWebhooks not implemented")
-}
-func (UnimplementedWebhookServiceServer) FindWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FindWebhook not implemented")
-}
-func (UnimplementedWebhookServiceServer) RetryWebhook(context.Context, *SendWebhookRequest) (*SendWebhookResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RetryWebhook not implemented")
 }
 func (UnimplementedWebhookServiceServer) mustEmbedUnimplementedWebhookServiceServer() {}
 
@@ -221,6 +184,42 @@ func (x *webhookServiceWatchServer) Send(m *HealthCheckResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _WebhookService_ListWebhooks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListWebhooksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebhookServiceServer).ListWebhooks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.WebhookService/ListWebhooks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebhookServiceServer).ListWebhooks(ctx, req.(*ListWebhooksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebhookService_GetWebhook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWebhookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebhookServiceServer).GetWebhook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.WebhookService/GetWebhook",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebhookServiceServer).GetWebhook(ctx, req.(*GetWebhookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WebhookService_SendWebhook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SendWebhookRequest)
 	if err := dec(in); err != nil {
@@ -239,63 +238,6 @@ func _WebhookService_SendWebhook_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WebhookService_GetWebhooks_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetWebhooksRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(WebhookServiceServer).GetWebhooks(m, &webhookServiceGetWebhooksServer{stream})
-}
-
-type WebhookService_GetWebhooksServer interface {
-	Send(*GetWebhooksResponse) error
-	grpc.ServerStream
-}
-
-type webhookServiceGetWebhooksServer struct {
-	grpc.ServerStream
-}
-
-func (x *webhookServiceGetWebhooksServer) Send(m *GetWebhooksResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _WebhookService_FindWebhook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendWebhookRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WebhookServiceServer).FindWebhook(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protobuf.WebhookService/FindWebhook",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebhookServiceServer).FindWebhook(ctx, req.(*SendWebhookRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _WebhookService_RetryWebhook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendWebhookRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WebhookServiceServer).RetryWebhook(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protobuf.WebhookService/RetryWebhook",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebhookServiceServer).RetryWebhook(ctx, req.(*SendWebhookRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // WebhookService_ServiceDesc is the grpc.ServiceDesc for WebhookService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -308,27 +250,22 @@ var WebhookService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _WebhookService_Check_Handler,
 		},
 		{
+			MethodName: "ListWebhooks",
+			Handler:    _WebhookService_ListWebhooks_Handler,
+		},
+		{
+			MethodName: "GetWebhook",
+			Handler:    _WebhookService_GetWebhook_Handler,
+		},
+		{
 			MethodName: "SendWebhook",
 			Handler:    _WebhookService_SendWebhook_Handler,
-		},
-		{
-			MethodName: "FindWebhook",
-			Handler:    _WebhookService_FindWebhook_Handler,
-		},
-		{
-			MethodName: "RetryWebhook",
-			Handler:    _WebhookService_RetryWebhook_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Watch",
 			Handler:       _WebhookService_Watch_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetWebhooks",
-			Handler:       _WebhookService_GetWebhooks_Handler,
 			ServerStreams: true,
 		},
 	},

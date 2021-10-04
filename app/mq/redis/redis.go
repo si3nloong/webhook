@@ -8,8 +8,8 @@ import (
 
 	"github.com/adjust/rmq/v4"
 	"github.com/go-redis/redis/v8"
-	pb "github.com/si3nloong/webhook/app/grpc/proto"
 	"github.com/si3nloong/webhook/cmd"
+	pb "github.com/si3nloong/webhook/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 

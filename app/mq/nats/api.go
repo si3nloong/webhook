@@ -3,7 +3,7 @@ package nats
 import (
 	"context"
 
-	pb "github.com/si3nloong/webhook/app/grpc/proto"
+	pb "github.com/si3nloong/webhook/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 

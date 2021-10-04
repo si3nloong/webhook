@@ -38,7 +38,7 @@ type Query {
   """
   Find webhook by id
   """
-  webhook(id: ID!): Webhook
+  webhook(id: ID!): Webhook!
 }
 
 type WebhookConnection {

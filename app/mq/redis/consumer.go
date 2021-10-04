@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/adjust/rmq/v4"
-	pb "github.com/si3nloong/webhook/app/grpc/proto"
+	pb "github.com/si3nloong/webhook/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 

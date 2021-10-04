@@ -1,10 +1,10 @@
 package http
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 )
 
-func (s *Server) Health(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, server is ok")
+func (s *Server) health(w http.ResponseWriter, r *http.Request) {
+	writeJson(w, http.StatusOK, json.RawMessage(`{"message":"ok"}`))
 }

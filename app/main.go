@@ -10,7 +10,6 @@ import (
 	"syscall"
 
 	validator "github.com/go-playground/validator/v10"
-	"github.com/gorilla/mux"
 
 	rpc "github.com/si3nloong/webhook/app/grpc"
 	restful "github.com/si3nloong/webhook/app/http/restful"
@@ -24,7 +23,6 @@ import (
 func main() {
 
 	var (
-		// mq      pubsub.MessageQueue
 		grpcSvr *grpc.Server
 		quit    = make(chan os.Signal, 1)
 		v       = validator.New()
@@ -71,13 +69,8 @@ func main() {
 	// serve HTTP
 	if cfg.Enabled {
 		go func() error {
-			r := mux.NewRouter()
-			svr := restful.NewServer(ws)
-			r.HandleFunc("/", svr.Health)
-			r.HandleFunc("/v1/webhook/send", svr.SendWebhook).Methods("POST")
-
 			log.Printf("HTTP server serve at %v", cfg.Port)
-			log.Fatal(http.ListenAndServe(util.FormatPort(cfg.Port), r))
+			log.Fatal(http.ListenAndServe(util.FormatPort(cfg.Port), restful.NewServer(ws)))
 			return nil
 		}()
 	}

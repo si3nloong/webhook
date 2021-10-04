@@ -342,7 +342,7 @@ type Query {
   """
   Find webhook by id
   """
-  webhook(id: ID!): Webhook
+  webhook(id: ID!): Webhook!
 }
 
 type WebhookConnection {
@@ -815,7 +815,7 @@ func (ec *executionContext) _Query_webhooks(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.WebhookConnection)
 	fc.Result = res
-	return ec.marshalNWebhookConnection2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookConnection(ctx, field.Selections, res)
+	return ec.marshalNWebhookConnection2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_webhook(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -850,11 +850,14 @@ func (ec *executionContext) _Query_webhook(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.Webhook)
 	fc.Result = res
-	return ec.marshalOWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhook(ctx, field.Selections, res)
+	return ec.marshalNWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhook(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1030,7 +1033,7 @@ func (ec *executionContext) _Webhook_method(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(model.HTTPMethod)
 	fc.Result = res
-	return ec.marshalNHttpMethod2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPMethod(ctx, field.Selections, res)
+	return ec.marshalNHttpMethod2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPMethod(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Webhook_headers(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
@@ -1065,7 +1068,7 @@ func (ec *executionContext) _Webhook_headers(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*model.HTTPHeader)
 	fc.Result = res
-	return ec.marshalNHttpHeader2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPHeaderᚄ(ctx, field.Selections, res)
+	return ec.marshalNHttpHeader2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPHeaderᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Webhook_body(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
@@ -1170,7 +1173,7 @@ func (ec *executionContext) _Webhook_status(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(model.WebhookStatus)
 	fc.Result = res
-	return ec.marshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookStatus(ctx, field.Selections, res)
+	return ec.marshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Webhook_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
@@ -1275,7 +1278,7 @@ func (ec *executionContext) _WebhookConnection_nodes(ctx context.Context, field 
 	}
 	res := resTmp.([]*model.Webhook)
 	fc.Result = res
-	return ec.marshalNWebhook2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookᚄ(ctx, field.Selections, res)
+	return ec.marshalNWebhook2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _WebhookConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.WebhookConnection) (ret graphql.Marshaler) {
@@ -1310,7 +1313,7 @@ func (ec *executionContext) _WebhookConnection_pageInfo(ctx context.Context, fie
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _WebhookConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.WebhookConnection) (ret graphql.Marshaler) {
@@ -2584,6 +2587,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_webhook(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
@@ -2985,7 +2991,7 @@ func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, se
 	return res
 }
 
-func (ec *executionContext) marshalNHttpHeader2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPHeaderᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.HTTPHeader) graphql.Marshaler {
+func (ec *executionContext) marshalNHttpHeader2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPHeaderᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.HTTPHeader) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3009,7 +3015,7 @@ func (ec *executionContext) marshalNHttpHeader2ᚕᚖgithubᚗcomᚋsi3nloongᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNHttpHeader2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPHeader(ctx, sel, v[i])
+			ret[i] = ec.marshalNHttpHeader2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPHeader(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3029,7 +3035,7 @@ func (ec *executionContext) marshalNHttpHeader2ᚕᚖgithubᚗcomᚋsi3nloongᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNHttpHeader2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPHeader(ctx context.Context, sel ast.SelectionSet, v *model.HTTPHeader) graphql.Marshaler {
+func (ec *executionContext) marshalNHttpHeader2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPHeader(ctx context.Context, sel ast.SelectionSet, v *model.HTTPHeader) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3039,13 +3045,13 @@ func (ec *executionContext) marshalNHttpHeader2ᚖgithubᚗcomᚋsi3nloongᚋweb
 	return ec._HttpHeader(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNHttpMethod2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPMethod(ctx context.Context, v interface{}) (model.HTTPMethod, error) {
+func (ec *executionContext) unmarshalNHttpMethod2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPMethod(ctx context.Context, v interface{}) (model.HTTPMethod, error) {
 	var res model.HTTPMethod
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNHttpMethod2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐHTTPMethod(ctx context.Context, sel ast.SelectionSet, v model.HTTPMethod) graphql.Marshaler {
+func (ec *executionContext) marshalNHttpMethod2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐHTTPMethod(ctx context.Context, sel ast.SelectionSet, v model.HTTPMethod) graphql.Marshaler {
 	return v
 }
 
@@ -3064,7 +3070,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3119,7 +3125,11 @@ func (ec *executionContext) marshalNUint642uint64(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNWebhook2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Webhook) graphql.Marshaler {
+func (ec *executionContext) marshalNWebhook2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhook(ctx context.Context, sel ast.SelectionSet, v model.Webhook) graphql.Marshaler {
+	return ec._Webhook(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNWebhook2ᚕᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Webhook) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3143,7 +3153,7 @@ func (ec *executionContext) marshalNWebhook2ᚕᚖgithubᚗcomᚋsi3nloongᚋweb
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhook(ctx, sel, v[i])
+			ret[i] = ec.marshalNWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhook(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3163,7 +3173,7 @@ func (ec *executionContext) marshalNWebhook2ᚕᚖgithubᚗcomᚋsi3nloongᚋweb
 	return ret
 }
 
-func (ec *executionContext) marshalNWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhook(ctx context.Context, sel ast.SelectionSet, v *model.Webhook) graphql.Marshaler {
+func (ec *executionContext) marshalNWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhook(ctx context.Context, sel ast.SelectionSet, v *model.Webhook) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3173,11 +3183,11 @@ func (ec *executionContext) marshalNWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhoo
 	return ec._Webhook(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNWebhookConnection2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookConnection(ctx context.Context, sel ast.SelectionSet, v model.WebhookConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNWebhookConnection2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookConnection(ctx context.Context, sel ast.SelectionSet, v model.WebhookConnection) graphql.Marshaler {
 	return ec._WebhookConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNWebhookConnection2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookConnection(ctx context.Context, sel ast.SelectionSet, v *model.WebhookConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNWebhookConnection2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookConnection(ctx context.Context, sel ast.SelectionSet, v *model.WebhookConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3187,13 +3197,13 @@ func (ec *executionContext) marshalNWebhookConnection2ᚖgithubᚗcomᚋsi3nloon
 	return ec._WebhookConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookStatus(ctx context.Context, v interface{}) (model.WebhookStatus, error) {
+func (ec *executionContext) unmarshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookStatus(ctx context.Context, v interface{}) (model.WebhookStatus, error) {
 	var res model.WebhookStatus
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhookStatus(ctx context.Context, sel ast.SelectionSet, v model.WebhookStatus) graphql.Marshaler {
+func (ec *executionContext) marshalNWebhookStatus2githubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋgraphqlᚋgraphᚋmodelᚐWebhookStatus(ctx context.Context, sel ast.SelectionSet, v model.WebhookStatus) graphql.Marshaler {
 	return v
 }
 
@@ -3545,13 +3555,6 @@ func (ec *executionContext) marshalOUint2ᚖuint(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	return scalar.MarshalUint(*v)
-}
-
-func (ec *executionContext) marshalOWebhook2ᚖgithubᚗcomᚋsi3nloongᚋwebhookᚋappᚋhttpᚋmonitorᚋgraphᚋmodelᚐWebhook(ctx context.Context, sel ast.SelectionSet, v *model.Webhook) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Webhook(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

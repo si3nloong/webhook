@@ -6,13 +6,14 @@ option go_package = "/protobuf";
 // import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+// follow spec of https://cloud.google.com/apis/design/naming_convention
 service WebhookService {
   rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
   rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+  rpc ListWebhooks(ListWebhooksRequest) returns (ListWebhooksResponse);
+  rpc GetWebhook(GetWebhookRequest) returns (GetWebhookResponse);
   rpc SendWebhook(SendWebhookRequest) returns (SendWebhookResponse);
-  rpc GetWebhooks(GetWebhooksRequest) returns (stream GetWebhooksResponse);
-  rpc FindWebhook(SendWebhookRequest) returns (SendWebhookResponse);
-  rpc RetryWebhook(SendWebhookRequest) returns (SendWebhookResponse);
+  // rpc RetryWebhook(SendWebhookRequest) returns (SendWebhookResponse);
 }
 
 message HealthCheckRequest {
@@ -27,6 +28,27 @@ message HealthCheckResponse {
     SERVICE_UNKNOWN = 3;  // Used only by the Watch method.
   }
   ServingStatus status = 1;
+}
+
+message ListWebhooksRequest {
+  // @gotags: validate:"omitempty,required"
+  string page_token = 1;
+  // @gotags: validate:"omitempty,max=100"
+  uint32 page_size = 2;
+}
+
+message ListWebhooksResponse {
+  repeated Webhook webhooks = 1;
+  string next_page_token = 2;
+}
+
+message GetWebhookRequest {
+  // @gotags: validate:"required"
+  string id = 1;
+}
+
+message GetWebhookResponse {
+  Webhook webhook = 1;
 }
 
 message SendWebhookRequest {
@@ -46,7 +68,7 @@ message SendWebhookRequest {
     BACKOFF = 0;
     LINEAR = 1;
   }
-  RetryMechanism retryMechanism = 6;
+  RetryMechanism retry_mechanism = 6;
   uint32 timeout = 7;
   // @gotags: validate:"lte=3"
   uint32 concurrent = 8;
@@ -61,14 +83,7 @@ message Webhook {
   string method = 2;
   string body = 3;
   uint32 retries = 4;
-  google.protobuf.Timestamp createdAt = 5;
-  google.protobuf.Timestamp updatedAt = 6;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
 }
 
-message GetWebhooksRequest {
-
-}
-
-message GetWebhooksResponse {
-  Webhook webhook = 1;
-}
