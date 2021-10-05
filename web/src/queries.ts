@@ -4,7 +4,7 @@ export type Webhook = {
   id: string;
   method: string;
   url: string;
-  retries: number;
+  latestStatusCode: number;
   createdAt: string;
 };
 
@@ -15,7 +15,7 @@ export const GET_WEBHOOKS = gql`
         id
         url
         method
-        retries
+        latestStatusCode
         createdAt
       }
     }

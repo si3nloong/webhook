@@ -2,15 +2,15 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/adjust/rmq/v4"
 	"github.com/go-redis/redis/v8"
+	"github.com/si3nloong/webhook/app/entity"
 	"github.com/si3nloong/webhook/cmd"
-	pb "github.com/si3nloong/webhook/protobuf"
-	"google.golang.org/protobuf/proto"
 )
 
 type redisMQ struct {
@@ -79,8 +79,8 @@ func New(cfg cmd.Config, cb func(delivery rmq.Delivery)) (*redisMQ, error) {
 	return mq, nil
 }
 
-func (mq *redisMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
-	b, err := proto.Marshal(req)
+func (mq *redisMQ) Publish(ctx context.Context, data *entity.WebhookRequest) error {
+	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}

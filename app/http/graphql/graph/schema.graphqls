@@ -62,8 +62,15 @@ type Webhook {
   method: HttpMethod!
   headers: [HttpHeader!]!
   body: String!
-  retries: Uint!
+  retries: [WebhookRetry]!
   status: WebhookStatus!
+  latestStatusCode: Uint!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type WebhookRetry {
+  statusCode: Uint!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

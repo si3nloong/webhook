@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log"
 
 	pb "github.com/si3nloong/webhook/protobuf"
 	"google.golang.org/grpc/status"
@@ -46,10 +47,12 @@ func (s *Server) SendWebhook(ctx context.Context, req *pb.SendWebhookRequest) (*
 	}
 
 	// push to message queue
-	if err := s.ws.Publish(ctx, req); err != nil {
+	data, err := s.ws.Publish(ctx, req)
+	if err != nil {
 		return nil, status.Convert(err).Err()
 	}
 
+	log.Println(data)
 	resp := new(pb.SendWebhookResponse)
 	return resp, nil
 }

@@ -50,14 +50,25 @@
     <div>Loading...</div>
   {:else if $webhooks.data}
     {#if $webhooks.data.webhooks.nodes.length > 0}
-      <table>
+      <table class="datatable">
+        <tr>
+          <th style="width: 10%">Status</th>
+          <th style="width: 20%">Webhook ID</th>
+          <th>Method</th>
+          <th>URL</th>
+          <th>Created Date</th>
+        </tr>
         {#each $webhooks.data.webhooks.nodes as item}
-          <tr on:click={() => push(`/webhook/${item.id}`)}>
-            <td>{item.id}</td>
+          <tr>
+            <td><span class="status">{item.latestStatusCode}</span></td>
+            <td
+              ><span class="link" on:click={() => push(`/webhook/${item.id}`)}
+                >{item.id}</span
+              ></td
+            >
             <td>{item.method}</td>
             <td>{item.url}</td>
-            <td>{item.retries}</td>
-            <td>{dayjs(item.createdAt).format("YYYY MMM DD HH:mm:ss A")}</td>
+            <td>{dayjs(item.createdAt).format("DD MMM YYYY, HH:mm:ss A")}</td>
           </tr>
         {/each}
       </table>
@@ -67,7 +78,7 @@
   {/if}
 </section>
 
-<style>
+<style lang="scss">
   #left-pane {
     text-align: left;
     border-right: 1px solid red;
@@ -76,5 +87,46 @@
 
   #right-pane {
     padding: 1rem;
+    flex-grow: 1;
+  }
+
+  .status {
+    display: inline-block;
+    border: 1px solid red;
+    width: 65px;
+    text-align: center;
+    border-radius: 5px;
+  }
+
+  table,
+  th,
+  td {
+    width: 100%;
+    border: 1px solid #dcdcdc;
+    border-collapse: collapse;
+    padding: 5px 10px;
+  }
+
+  .datatable {
+    border-radius: 6px;
+  }
+
+  th {
+    background: #f5f5f5;
+    border-bottom: 2px solid #dcdcdc;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+
+  .link {
+    cursor: pointer;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 </style>

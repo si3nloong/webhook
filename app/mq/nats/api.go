@@ -2,13 +2,13 @@ package nats
 
 import (
 	"context"
+	"encoding/json"
 
-	pb "github.com/si3nloong/webhook/protobuf"
-	"google.golang.org/protobuf/proto"
+	"github.com/si3nloong/webhook/app/entity"
 )
 
-func (q *natsMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) error {
-	b, err := proto.Marshal(req)
+func (q *natsMQ) Publish(ctx context.Context, data *entity.WebhookRequest) error {
+	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
@@ -16,6 +16,5 @@ func (q *natsMQ) Publish(ctx context.Context, req *pb.SendWebhookRequest) error 
 	if _, err := q.js.Publish(q.subj, b); err != nil {
 		return err
 	}
-
 	return nil
 }

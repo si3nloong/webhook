@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"time"
@@ -54,39 +55,18 @@ func New(cfg cmd.Config) (*db, error) {
 	return v, nil
 }
 
-func (c *db) Incr(ctx context.Context, id string) error {
-	var buf bytes.Buffer
-	buf.WriteString(`{
-		"script" : {
-			"source": "ctx._source.counter += params.count",
-			"lang": "painless",
-			"params" : {
-				"count" : 1
-			}
-		}
-	}`)
-	res, err := c.client.Update(
-		c.indexName,
-		id,
-		&buf,
-		c.client.Update.WithContext(ctx),
-		c.client.Update.WithPretty(),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	return nil
-}
-
 func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error) {
 	var buf bytes.Buffer
+	buf.WriteString(`{
+		"sort" : [
+			{ "createdAt" : "desc" }
+		]
+	}`)
 	res, err := c.client.Search(
 		c.client.Search.WithContext(ctx),
 		c.client.Search.WithIndex(c.indexName),
 		c.client.Search.WithBody(&buf),
-		c.client.Search.WithTrackTotalHits(true),
+		// c.client.Search.WithTrackTotalHits(true),
 	)
 	if err != nil {
 		return nil, "", err
@@ -98,6 +78,7 @@ func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (dat
 		return nil, "", err
 	}
 
+	log.Println(buf.String())
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
 
 	for _, r := range result {
@@ -164,6 +145,61 @@ func (c *db) CreateWebhook(ctx context.Context, data *entity.WebhookRequest) err
 	if _, err := req.Do(ctx, c.client); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body string) error {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf(`{
+		"script" : {
+			"source": "ctx._source.counter += params.count; ctx._source.retries.addAll(params.retry);",
+			"lang": "painless",
+			"params" : {
+				"count" : 1,
+				"retry" : ["item1"]
+			}
+		},
+		"doc": {
+			"lastStatusCode": %d
+		}
+	}`, statusCode))
+	res, err := c.client.Update(
+		c.indexName,
+		id,
+		&buf,
+		c.client.Update.WithContext(ctx),
+		c.client.Update.WithPretty(),
+	)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	return nil
+}
+
+func (c *db) Incr(ctx context.Context, id string) error {
+	var buf bytes.Buffer
+	buf.WriteString(`{
+		"script" : {
+			"source": "ctx._source.counter += params.count",
+			"lang": "painless",
+			"params" : {
+				"count" : 1
+			}
+		}
+	}`)
+	res, err := c.client.Update(
+		c.indexName,
+		id,
+		&buf,
+		c.client.Update.WithContext(ctx),
+		c.client.Update.WithPretty(),
+	)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
 
 	return nil
 }
