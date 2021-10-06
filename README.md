@@ -1,4 +1,9 @@
-# Webhook
+<center>
+  <img src="https://user-images.githubusercontent.com/28108597/136213335-8eb3bff5-cda2-4758-a723-2fce660892af.png" width="140px">
+</center>
+<br/>
+
+# Webhook Server
 
 > A golang webhook server comply with at least once deliver.
 
@@ -45,18 +50,18 @@ message_queue:
 ## ✨ Features
 
 - Support [YAML](https://yaml.org/) and [env](https://en.wikipedia.org/wiki/Env) configuration.
-- Support retry send webhook if the response is fail.
+- Automatically re-send webhook if the response is fail.
 - [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API ready.
 - [GraphQL](https://graphql.org/) API ready.
 - Support [gRPC](https://grpc.io/) protocol.
-- Support tracing, [Jaeger](https://github.com/jaegertracing/jaeger), [OpenCensus](https://opencensus.io/)
 - Allow to send a webhook using [cURL](https://curl.se/) command
-- Support Redis, NATS, NSQ as [Message Queue](https://en.wikipedia.org/wiki/Message_queue) engine.
-- Support MongoDB, Elasticsearch as Persistent Volume engine.
-- CLI ready.
+- Support [Redis](https://redis.io/), [NATS](https://nats.io/), NSQ as [Message Queue](https://en.wikipedia.org/wiki/Message_queue) engine.
+- Support [Elasticsearch](https://www.elastic.co/) as Persistent Volume engine.
 - Dockerize.
 - Configurable.
 - Kubernetes ready.
+  <!-- - CLI ready. -->
+  <!-- - Support tracing, [Jaeger](https://github.com/jaegertracing/jaeger), [OpenCensus](https://opencensus.io/) -->
 
 ## ⚡️ RESTful APIs
 

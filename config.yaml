@@ -16,6 +16,7 @@ grpc:
 # Database - Elasticsearch
 elasticsearch:
   host: "http://localhost:9200"
+  index_name: ""
   username: ""
   password: ""
 
