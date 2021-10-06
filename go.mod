@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/go-playground/validator/v10 v10.9.0
-	github.com/go-redis/redis/v8 v8.11.3
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/nats-io/nats.go v1.12.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
@@ -26,6 +26,6 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/gjson v1.9.1
+	github.com/tidwall/gjson v1.9.2
 	github.com/vektah/gqlparser/v2 v2.2.0
 )
