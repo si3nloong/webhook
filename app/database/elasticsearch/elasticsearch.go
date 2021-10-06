@@ -151,19 +151,24 @@ func (c *db) CreateWebhook(ctx context.Context, data *entity.WebhookRequest) err
 
 func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body string) error {
 	var buf bytes.Buffer
+	retry := entity.Retry{}
+	retry.Response.Body = body
+	retry.Response.StatusCode = statusCode
+	retry.CreatedAt = time.Now().UTC()
+	b, err := json.Marshal(retry)
+	if err != nil {
+		return err
+	}
 	buf.WriteString(fmt.Sprintf(`{
 		"script" : {
-			"source": "ctx._source.counter += params.count; ctx._source.retries.addAll(params.retry);",
+			"source": "ctx._source.retries.addAll(params.retry);",
 			"lang": "painless",
 			"params" : {
-				"count" : 1,
-				"retry" : ["item1"]
+				"retry" : [%s]
 			}
-		},
-		"doc": {
-			"lastStatusCode": %d
 		}
-	}`, statusCode))
+	}`, b))
+	log.Println(buf.String())
 	res, err := c.client.Update(
 		c.indexName,
 		id,

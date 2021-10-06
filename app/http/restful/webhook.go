@@ -46,7 +46,7 @@ func (s *Server) findWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJson(w, http.StatusOK, &dto.Item{Item: transformer.ToWebhookDetail(data, nil)})
+	writeJson(w, http.StatusOK, &dto.Item{Item: transformer.ToWebhookDetail(data)})
 }
 
 func (s *Server) sendWebhook(w http.ResponseWriter, r *http.Request) {

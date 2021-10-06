@@ -17,6 +17,13 @@ type Webhook struct {
 // WebhookDetail :
 type WebhookDetail struct {
 	Webhook
-	NoOfRetries int           `json:"noOfRetries"`
-	Retries     []interface{} `json:"retries"`
+	NoOfRetries int            `json:"noOfRetries"`
+	Retries     []WebhookRetry `json:"retries"`
+}
+
+// WebhookRetry :
+type WebhookRetry struct {
+	Body       string   `json:"body"`
+	StatusCode int      `json:"statusCode"`
+	CreatedAt  DateTime `json:"created"`
 }

@@ -12,16 +12,26 @@ func ToWebhook(data *entity.WebhookRequest) (o *dto.Webhook) {
 	o.Method = data.Method
 	o.Headers = make(map[string]string)
 	o.Body = data.Body
-	o.LastStatusCode = data.LastStatusCode
+	noOfRetries := len(data.Retries)
+	if noOfRetries > 0 {
+		o.LastStatusCode = data.Retries[noOfRetries-1].Response.StatusCode
+	}
 	o.CreatedAt = dto.DateTime(data.CreatedAt)
 	o.UpdatedAt = dto.DateTime(data.UpdatedAt)
 	return
 }
 
-func ToWebhookDetail(data *entity.WebhookRequest, retries []entity.Retry) (o *dto.WebhookDetail) {
+func ToWebhookDetail(data *entity.WebhookRequest) (o *dto.WebhookDetail) {
 	o = new(dto.WebhookDetail)
 	o.Webhook = *ToWebhook(data)
-	o.NoOfRetries = len(retries)
-	o.Retries = make([]interface{}, 0)
+	o.NoOfRetries = len(data.Retries)
+	o.Retries = make([]dto.WebhookRetry, 0)
+	for _, r := range data.Retries {
+		o.Retries = append(o.Retries, dto.WebhookRetry{
+			Body:       r.Response.Body,
+			StatusCode: r.Response.StatusCode,
+			CreatedAt:  dto.DateTime(r.CreatedAt),
+		})
+	}
 	return
 }
