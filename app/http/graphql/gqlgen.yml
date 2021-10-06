@@ -54,9 +54,13 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Int64:
+    model: github.com/99designs/gqlgen/graphql.Int64
+  DateTime:
+    model: github.com/99designs/gqlgen/graphql.Time
   Uint:
     model: github.com/si3nloong/webhook/app/http/graphql/graph/scalar.Uint
   Uint64:
     model: github.com/si3nloong/webhook/app/http/graphql/graph/scalar.Uint64
-  DateTime:
-    model: github.com/99designs/gqlgen/graphql.Time
+  Filter:
+    model: github.com/si3nloong/webhook/app/http/graphql/graph/scalar.Filter

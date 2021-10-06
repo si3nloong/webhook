@@ -1,11 +1,26 @@
 import { gql } from "@apollo/client";
 
+type HttpHeader = [{ key: string; value: string }];
+
+type WebhookAttempt = {
+  body: string;
+  headers: HttpHeader;
+  elapsedTime: number;
+  createdAt: string;
+};
+
 export type Webhook = {
   id: string;
   method: string;
   url: string;
+  body: string;
+  headers: HttpHeader;
+  timeout: number;
+  noOfRetries: number;
+  attempts: [WebhookAttempt];
   latestStatusCode: number;
   createdAt: string;
+  updatedAt: string;
 };
 
 export const GET_WEBHOOKS = gql`
@@ -28,8 +43,19 @@ export const FIND_WEBHOOK = gql`
       id
       url
       method
-      retries
+      headers {
+        key
+        value
+      }
+      body
+      timeout
+      attempts {
+        body
+        elapsedTime
+        createdAt
+      }
       createdAt
+      updatedAt
     }
   }
 `;

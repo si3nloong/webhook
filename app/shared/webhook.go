@@ -37,7 +37,7 @@ type Repository interface {
 	CreateWebhook(ctx context.Context, data *entity.WebhookRequest) error
 	GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error)
 	FindWebhook(ctx context.Context, id string) (*entity.WebhookRequest, error)
-	UpdateWebhook(ctx context.Context, id string, status int, body string) error
+	UpdateWebhook(ctx context.Context, id string, status int, body string, elapsedTime time.Duration) error
 }
 
 type MessageQueue interface {
@@ -121,7 +121,7 @@ func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest)
 	if req.Timeout > 0 {
 		data.Timeout = uint(req.Timeout)
 	}
-	data.Retries = make([]entity.Retry, 0)
+	data.Attempts = make([]entity.Retry, 0)
 	data.CreatedAt = utcNow
 	data.UpdatedAt = utcNow
 
@@ -137,6 +137,7 @@ func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest)
 
 func (s *webhookServer) fireWebhook(data *entity.WebhookRequest) error {
 	ctx := context.TODO()
+	startTime := time.Now().UTC()
 	// opts := make([]retry.Option, 0)
 	// if req.Retry < 1 {
 	// 	req.Retry = 1
@@ -227,7 +228,7 @@ func (s *webhookServer) fireWebhook(data *entity.WebhookRequest) error {
 		log.Println("400")
 	}
 
-	s.UpdateWebhook(ctx, data.ID.String(), statusCode, string(body))
+	s.UpdateWebhook(ctx, data.ID.String(), statusCode, string(body), time.Now().UTC().Sub(startTime))
 
 	// s.Update(ctx, id)
 	// 		return nil

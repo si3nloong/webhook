@@ -22,16 +22,24 @@ type PageInfo struct {
 }
 
 type Webhook struct {
-	ID               string          `json:"id"`
-	URL              string          `json:"url"`
-	Method           HTTPMethod      `json:"method"`
-	Headers          []*HTTPHeader   `json:"headers"`
-	Body             string          `json:"body"`
-	Retries          []*WebhookRetry `json:"retries"`
-	Status           WebhookStatus   `json:"status"`
-	LatestStatusCode uint            `json:"latestStatusCode"`
-	CreatedAt        time.Time       `json:"createdAt"`
-	UpdatedAt        time.Time       `json:"updatedAt"`
+	ID               string            `json:"id"`
+	URL              string            `json:"url"`
+	Method           HTTPMethod        `json:"method"`
+	Headers          []*HTTPHeader     `json:"headers"`
+	Body             string            `json:"body"`
+	Attempts         []*WebhookAttempt `json:"attempts"`
+	Timeout          uint              `json:"timeout"`
+	LatestStatusCode uint              `json:"latestStatusCode"`
+	CreatedAt        time.Time         `json:"createdAt"`
+	UpdatedAt        time.Time         `json:"updatedAt"`
+}
+
+type WebhookAttempt struct {
+	Headers     []*HTTPHeader `json:"headers"`
+	Body        string        `json:"body"`
+	ElapsedTime int64         `json:"elapsedTime"`
+	StatusCode  uint          `json:"statusCode"`
+	CreatedAt   time.Time     `json:"createdAt"`
 }
 
 type WebhookConnection struct {
@@ -41,12 +49,6 @@ type WebhookConnection struct {
 	PageInfo *PageInfo `json:"pageInfo"`
 	// Identifies the total count of items in the connection.
 	TotalCount uint64 `json:"totalCount"`
-}
-
-type WebhookRetry struct {
-	StatusCode uint      `json:"statusCode"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
 type HTTPMethod string

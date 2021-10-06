@@ -12,9 +12,10 @@ func ToWebhook(data *entity.WebhookRequest) (o *dto.Webhook) {
 	o.Method = data.Method
 	o.Headers = make(map[string]string)
 	o.Body = data.Body
-	noOfRetries := len(data.Retries)
+	o.Timeout = data.Timeout
+	noOfRetries := len(data.Attempts)
 	if noOfRetries > 0 {
-		o.LastStatusCode = data.Retries[noOfRetries-1].Response.StatusCode
+		o.LastStatusCode = data.Attempts[noOfRetries-1].StatusCode
 	}
 	o.CreatedAt = dto.DateTime(data.CreatedAt)
 	o.UpdatedAt = dto.DateTime(data.UpdatedAt)
@@ -24,14 +25,17 @@ func ToWebhook(data *entity.WebhookRequest) (o *dto.Webhook) {
 func ToWebhookDetail(data *entity.WebhookRequest) (o *dto.WebhookDetail) {
 	o = new(dto.WebhookDetail)
 	o.Webhook = *ToWebhook(data)
-	o.NoOfRetries = len(data.Retries)
-	o.Retries = make([]dto.WebhookRetry, 0)
-	for _, r := range data.Retries {
-		o.Retries = append(o.Retries, dto.WebhookRetry{
-			Body:       r.Response.Body,
-			StatusCode: r.Response.StatusCode,
-			CreatedAt:  dto.DateTime(r.CreatedAt),
-		})
+	o.NoOfRetries = len(data.Attempts)
+	o.Attempts = make([]dto.WebhookRetry, 0)
+	for _, r := range data.Attempts {
+		attempt := dto.WebhookRetry{}
+		attempt.Headers = make(map[string]string)
+		attempt.Body = r.Body
+		attempt.ElapsedTime = r.ElapsedTime
+		attempt.StatusCode = r.StatusCode
+		attempt.CreatedAt = dto.DateTime(r.CreatedAt)
+
+		o.Attempts = append(o.Attempts, attempt)
 	}
 	return
 }

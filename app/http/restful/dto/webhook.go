@@ -5,11 +5,10 @@ type Webhook struct {
 	ID             string            `json:"id"`
 	URL            string            `json:"url"`
 	Method         string            `json:"method"`
-	Body           string            `json:"body"`
 	Headers        map[string]string `json:"headers"`
+	Body           string            `json:"body"`
 	Timeout        uint              `json:"timeout"`
 	LastStatusCode int               `json:"lastStatusCode"`
-	Status         string            `json:"status"`
 	CreatedAt      DateTime          `json:"createdAt"`
 	UpdatedAt      DateTime          `json:"updatedAt"`
 }
@@ -18,12 +17,14 @@ type Webhook struct {
 type WebhookDetail struct {
 	Webhook
 	NoOfRetries int            `json:"noOfRetries"`
-	Retries     []WebhookRetry `json:"retries"`
+	Attempts    []WebhookRetry `json:"attempts"`
 }
 
 // WebhookRetry :
 type WebhookRetry struct {
-	Body       string   `json:"body"`
-	StatusCode int      `json:"statusCode"`
-	CreatedAt  DateTime `json:"created"`
+	Headers     map[string]string `json:"headers"`
+	Body        string            `json:"body"`
+	StatusCode  int               `json:"statusCode"`
+	ElapsedTime int64             `json:"elapsedTime"`
+	CreatedAt   DateTime          `json:"created"`
 }

@@ -16,14 +16,13 @@ const (
 
 // WebhookRequest :
 type WebhookRequest struct {
-	ID             ksuid.KSUID       `json:"id"`
-	Method         string            `json:"method"`
-	URL            string            `json:"url"`
-	Headers        map[string]string `json:"headers"`
-	Body           string            `json:"body"`
-	Timeout        uint              `json:"timeout"`
-	Retries        []Retry           `json:"retries"`
-	LastStatusCode int               `json:"lastStatusCode"`
-	CreatedAt      time.Time         `json:"createdAt"`
-	UpdatedAt      time.Time         `json:"updatedAt"`
+	ID        ksuid.KSUID       `json:"id"`
+	Method    string            `json:"method"`
+	URL       string            `json:"url"`
+	Headers   map[string]string `json:"headers"`
+	Body      string            `json:"body"`
+	Timeout   uint              `json:"timeout"`
+	Attempts  []Retry           `json:"attempts"`
+	CreatedAt time.Time         `json:"createdAt"`
+	UpdatedAt time.Time         `json:"updatedAt"`
 }

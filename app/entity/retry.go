@@ -3,9 +3,9 @@ package entity
 import "time"
 
 type Retry struct {
-	Response struct {
-		Body       string `json:"body"`
-		StatusCode int    `json:"statusCode"`
-	} `json:"response"`
-	CreatedAt time.Time `json:"createdAt"`
+	Body        string            `json:"body"`
+	Headers     map[string]string `json:"headers"`
+	StatusCode  int               `json:"statusCode"`
+	ElapsedTime int64             `json:"elapsedTime"`
+	CreatedAt   time.Time         `json:"createdAt"`
 }

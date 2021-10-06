@@ -149,22 +149,26 @@ func (c *db) CreateWebhook(ctx context.Context, data *entity.WebhookRequest) err
 	return nil
 }
 
-func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body string) error {
-	var buf bytes.Buffer
+func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body string, elapsedTime time.Duration) error {
+	utcNow := time.Now().UTC()
 	retry := entity.Retry{}
-	retry.Response.Body = body
-	retry.Response.StatusCode = statusCode
-	retry.CreatedAt = time.Now().UTC()
+	retry.Body = body
+	retry.ElapsedTime = elapsedTime.Milliseconds()
+	retry.StatusCode = statusCode
+	retry.CreatedAt = utcNow
+
 	b, err := json.Marshal(retry)
 	if err != nil {
 		return err
 	}
+
+	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf(`{
-		"script" : {
-			"source": "ctx._source.retries.addAll(params.retry);",
+		"script": {
+			"source": "ctx._source.attempts.addAll(params.attempt);",
 			"lang": "painless",
 			"params" : {
-				"retry" : [%s]
+				"attempt" : [%s]
 			}
 		}
 	}`, b))
@@ -180,6 +184,7 @@ func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body 
 		return err
 	}
 	defer res.Body.Close()
+
 	return nil
 }
 

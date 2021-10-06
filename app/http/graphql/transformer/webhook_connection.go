@@ -31,7 +31,17 @@ func ToWebhook(in *entity.WebhookRequest) (out *model.Webhook) {
 		out.Headers = append(out.Headers, &model.HTTPHeader{Key: k, Value: v})
 	}
 	out.Body = in.Body
-	// out.Retries =
+	out.Timeout = in.Timeout
+	out.Attempts = make([]*model.WebhookAttempt, len(in.Attempts))
+	for idx, a := range in.Attempts {
+		attempt := model.WebhookAttempt{}
+		attempt.ElapsedTime = a.ElapsedTime
+		attempt.Body = a.Body
+		attempt.StatusCode = uint(a.StatusCode)
+		attempt.CreatedAt = a.CreatedAt
+
+		out.Attempts[idx] = &attempt
+	}
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt
 	return

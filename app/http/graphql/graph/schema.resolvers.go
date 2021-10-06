@@ -5,13 +5,14 @@ package graph
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/si3nloong/webhook/app/http/graphql/graph/generated"
 	"github.com/si3nloong/webhook/app/http/graphql/graph/model"
 	"github.com/si3nloong/webhook/app/http/graphql/transformer"
 )
 
-func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *string, first *uint, last *uint, filter *string) (*model.WebhookConnection, error) {
+func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *string, first *uint, last *uint, filter json.RawMessage) (*model.WebhookConnection, error) {
 	limit := uint(100)
 	if first != nil {
 		limit = *first

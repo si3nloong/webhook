@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ApolloClient, InMemoryCache } from "@apollo/client";
   import { setClient } from "svelte-apollo";
-  import { Router } from "svelte-history-router";
+  import { push, Router } from "svelte-history-router";
   import routes from "./routes";
 
   const cache = new InMemoryCache();
@@ -22,7 +22,9 @@
   setClient(client);
 </script>
 
-<header id="appbar">Webhook UI</header>
+<header id="appbar">
+  <span id="appname" on:click={() => push("/")}>Webhook UI</span>
+</header>
 <main>
   <Router {routes} />
 </main>
@@ -49,6 +51,10 @@
     width: 100%;
     padding: 1rem;
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  #appname {
+    cursor: pointer;
   }
 
   main {

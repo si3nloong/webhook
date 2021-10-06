@@ -3,6 +3,7 @@
 # https://gqlgen.com/getting-started/
 scalar Uint
 scalar Uint64
+scalar Int64
 scalar DateTime
 scalar Filter
 
@@ -62,17 +63,19 @@ type Webhook {
   method: HttpMethod!
   headers: [HttpHeader!]!
   body: String!
-  retries: [WebhookRetry]!
-  status: WebhookStatus!
+  attempts: [WebhookAttempt!]!
+  timeout: Uint!
   latestStatusCode: Uint!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-type WebhookRetry {
+type WebhookAttempt {
+  headers: [HttpHeader!]!
+  body: String!
+  elapsedTime: Int64!
   statusCode: Uint!
   createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 enum HttpMethod {
