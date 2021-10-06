@@ -64,11 +64,15 @@ message_queue:
 
 ## ⚡️ RESTful APIs
 
-Please refer to [here](/http/README.md).
+Please refer to [here](/app/http/restful/README.md).
+
+## ⚡️ GraphQL API
+
+Please refer to [here](/app/http/graphql/README.md).
 
 ## 💡 gRPC API
 
-Please refer to [proto](/grpc/api) files.
+Please refer to [proto](/protobuf) files.
 
 ## ⚠️ Disclaimer
 
