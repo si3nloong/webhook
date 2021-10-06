@@ -78,7 +78,6 @@ func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (dat
 		return nil, "", err
 	}
 
-	log.Println(buf.String())
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
 
 	for _, r := range result {
@@ -149,15 +148,8 @@ func (c *db) CreateWebhook(ctx context.Context, data *entity.WebhookRequest) err
 	return nil
 }
 
-func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body string, elapsedTime time.Duration) error {
-	utcNow := time.Now().UTC()
-	retry := entity.Retry{}
-	retry.Body = body
-	retry.ElapsedTime = elapsedTime.Milliseconds()
-	retry.StatusCode = statusCode
-	retry.CreatedAt = utcNow
-
-	b, err := json.Marshal(retry)
+func (c *db) UpdateWebhook(ctx context.Context, id string, attempt *entity.Attempt) error {
+	b, err := json.Marshal(attempt)
 	if err != nil {
 		return err
 	}
@@ -172,33 +164,7 @@ func (c *db) UpdateWebhook(ctx context.Context, id string, statusCode int, body 
 			}
 		}
 	}`, b))
-	log.Println(buf.String())
-	res, err := c.client.Update(
-		c.indexName,
-		id,
-		&buf,
-		c.client.Update.WithContext(ctx),
-		c.client.Update.WithPretty(),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
 
-	return nil
-}
-
-func (c *db) Incr(ctx context.Context, id string) error {
-	var buf bytes.Buffer
-	buf.WriteString(`{
-		"script" : {
-			"source": "ctx._source.counter += params.count",
-			"lang": "painless",
-			"params" : {
-				"count" : 1
-			}
-		}
-	}`)
 	res, err := c.client.Update(
 		c.indexName,
 		id,

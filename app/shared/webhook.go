@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"github.com/adjust/rmq/v4"
 	"github.com/avast/retry-go/v3"
@@ -37,7 +38,7 @@ type Repository interface {
 	CreateWebhook(ctx context.Context, data *entity.WebhookRequest) error
 	GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error)
 	FindWebhook(ctx context.Context, id string) (*entity.WebhookRequest, error)
-	UpdateWebhook(ctx context.Context, id string, status int, body string, elapsedTime time.Duration) error
+	UpdateWebhook(ctx context.Context, id string, attempt *entity.Attempt) error
 }
 
 type MessageQueue interface {
@@ -88,7 +89,13 @@ func NewServer(cfg cmd.Config) WebhookServer {
 				return
 			}
 
-			svr.fireWebhook(&data)
+			if err := svr.fireWebhook(&data); err != nil {
+				delivery.Reject()
+				log.Println("Error =>", err)
+				return
+			}
+
+			delivery.Ack()
 		})
 	default:
 		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
@@ -121,7 +128,7 @@ func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest)
 	if req.Timeout > 0 {
 		data.Timeout = uint(req.Timeout)
 	}
-	data.Attempts = make([]entity.Retry, 0)
+	data.Attempts = make([]entity.Attempt, 0)
 	data.CreatedAt = utcNow
 	data.UpdatedAt = utcNow
 
@@ -138,113 +145,121 @@ func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest)
 func (s *webhookServer) fireWebhook(data *entity.WebhookRequest) error {
 	ctx := context.TODO()
 	startTime := time.Now().UTC()
-	// opts := make([]retry.Option, 0)
-	// if req.Retry < 1 {
+	opts := make([]retry.Option, 0)
+	// if data.Retry < 1 {
 	// 	req.Retry = 1
 	// }
 	log.Println("SendWebhook now....!!!")
 
-	// opts = append(opts, retry.Attempts(uint(req.Retry)))
+	opts = append(opts, retry.Attempts(10))
 	// if req.RetryMechanism > 0 {
-	// 	retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
-	// 		log.Println("backoff retrying")
-	// 		log.Println(n, err, config)
-	// 		// fmt.Println("Server fails with: " + err.Error())
-	// 		// if retriable, ok := err.(*retry.RetriableError); ok {
-	// 		// 	fmt.Printf("Client follows server recommendation to retry after %v\n", retriable.RetryAfter)
-	// 		// 	return retriable.RetryAfter
-	// 		// }
+	opts = append(opts, retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
+		log.Println("backoff retrying")
+		log.Println(n, err, config)
+		// fmt.Println("Server fails with: " + err.Error())
+		// if retriable, ok := err.(*retry.RetriableError); ok {
+		// 	fmt.Printf("Client follows server recommendation to retry after %v\n", retriable.RetryAfter)
+		// 	return retriable.RetryAfter
+		// }
 
-	// 		// apply a default exponential back off strategy
-	// 		return retry.BackOffDelay(n, err, config)
-	// 	})
+		// apply a default exponential back off strategy
+		return retry.BackOffDelay(n, err, config)
+	}))
 	// }
 
-	// err := retry.Do(
-	// 	func() error {
-	httpReq := fasthttp.AcquireRequest()
-	httpResp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseRequest(httpReq)
-	defer fasthttp.ReleaseResponse(httpResp)
-	httpReq.Header.SetRequestURI(data.URL)
-	httpReq.Header.SetMethod(data.Method)
+	errs := retry.Do(
+		func() error {
+			httpReq := fasthttp.AcquireRequest()
+			httpResp := fasthttp.AcquireResponse()
+			defer fasthttp.ReleaseRequest(httpReq)
+			defer fasthttp.ReleaseResponse(httpResp)
+			httpReq.Header.SetRequestURI(data.URL)
+			httpReq.Header.SetMethod(data.Method)
 
-	for k, v := range data.Headers {
-		httpReq.Header.Add(k, v)
-	}
-	httpReq.AppendBodyString(data.Body)
+			for k, v := range data.Headers {
+				httpReq.Header.Add(k, v)
+			}
+			httpReq.AppendBodyString(data.Body)
 
-	// By default timeout is 3 seconds
-	timeout := 3 * time.Second
-	// if data.Timeout > 0 {
-	// 	timeout = time.Second * time.Duration(req.Timeout)
-	// }
+			// By default timeout is 3 seconds
+			timeout := 3 * time.Second
+			// if data.Timeout > 0 {
+			// 	timeout = time.Second * time.Duration(req.Timeout)
+			// }
 
-	log.Println("Request =======>")
-	log.Println(httpReq.String())
+			log.Println("Request =======>")
+			log.Println(httpReq.String())
 
-	var dnsError *net.DNSError
-	if err := fasthttp.DoTimeout(httpReq, httpResp, timeout); errors.As(err, &dnsError) {
-		// If it's an invalid host, drop the request directly
-		log.Println("Error 1 =======>", err)
-		return retry.Unrecoverable(err)
-	} else if err != nil {
-		switch t := err.(type) {
-		case *net.OpError:
-			// if it's an unknown host, drop it
-			if t.Op == "dial" {
-				println("Unknown host")
-			} else if t.Op == "read" {
-				println("Connection refused")
+			var dnsError *net.DNSError
+			if err := fasthttp.DoTimeout(httpReq, httpResp, timeout); errors.As(err, &dnsError) {
+				// If it's an invalid host, drop the request directly
+				log.Println("Error 1 =======>", err)
+				return retry.Unrecoverable(err)
+			} else if err != nil {
+				switch t := err.(type) {
+				case *net.OpError:
+					// if it's an unknown host, drop it
+					if t.Op == "dial" {
+						println("Unknown host")
+					} else if t.Op == "read" {
+						println("Connection refused")
+					}
+
+				case syscall.Errno:
+					if t == syscall.ECONNREFUSED {
+						println("Connection refused")
+					}
+				}
+				log.Println("Error 2 =======>", err, reflect.TypeOf(err))
+				return err
 			}
 
-		case syscall.Errno:
-			if t == syscall.ECONNREFUSED {
-				println("Connection refused")
+			log.Println("Response =======>")
+			log.Println(httpResp.String())
+			statusCode := httpResp.StatusCode()
+			var body string
+			i64, _ := strconv.ParseInt(string(httpResp.Header.Peek("Content-Length")), 10, 64)
+			// discard the response if body bigger than 1mb
+			if i64 < 1048 {
+				body = string(httpResp.Body())
 			}
-		}
-		log.Println("Error 2 =======>", err, reflect.TypeOf(err))
-		return err
-	}
 
-	log.Println("Response =======>")
-	log.Println(httpResp.String())
-	statusCode := httpResp.StatusCode()
-	i64, _ := strconv.ParseInt(string(httpResp.Header.Peek("Content-Length")), 10, 64)
-	if i64 > 1048 {
-		// discard the response if body bigger than 1mb
-	}
-	body := httpResp.Body()
+			utcNow := time.Now().UTC()
+			att := entity.Attempt{}
+			att.Headers = make(map[string]string)
+			httpResp.Header.VisitAll(func(key, value []byte) {
+				att.Headers[b2s(key)] = b2s(value)
+			})
+			att.Body = body
+			att.ElapsedTime = time.Now().UTC().Sub(startTime).Milliseconds()
+			att.StatusCode = statusCode
+			att.CreatedAt = utcNow
 
-	// 100 - 199
-	if statusCode < fasthttp.StatusOK {
-		log.Println("100 - 199")
-		// 500
-	} else if statusCode >= fasthttp.StatusInternalServerError {
-		log.Println("500")
-		// return &requestError{body: httpResp.String()}
-		// 400
-	} else if statusCode >= fasthttp.StatusBadRequest {
-		log.Println("400")
-	}
+			if err := s.UpdateWebhook(ctx, data.ID.String(), &att); err != nil {
+				return err
+			}
 
-	s.UpdateWebhook(ctx, data.ID.String(), statusCode, string(body), time.Now().UTC().Sub(startTime))
+			// 100 - 199
+			if statusCode < fasthttp.StatusOK {
+				log.Println("100 - 199")
+				// 500
+			} else if statusCode >= fasthttp.StatusInternalServerError {
+				log.Println("500")
+				// return &requestError{body: httpResp.String()}
+				// 400
+				return errors.New("error 500")
+			} else if statusCode >= fasthttp.StatusBadRequest {
+				log.Println("400")
+				// retry
+				return errors.New("error 404")
+			}
 
-	// s.Update(ctx, id)
-	// 		return nil
-	// 	},
-	// 	opts...,
-	// )
-	// if err != nil {
-	// 	log.Println("Error here =>", err)
-	// 	// s.LogError(ctx,, req, err)
-	// 	return err
-	// }
+			return nil
+		},
+		opts...,
+	)
 
-	// if err := s.Incr(ctx, metric.StatTypeSucceed); err != nil {
-	// 	return err
-	// }
-	return nil
+	return errs
 }
 
 type requestError struct {
@@ -253,4 +268,8 @@ type requestError struct {
 
 func (e requestError) Error() string {
 	return ""
+}
+
+func b2s(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }

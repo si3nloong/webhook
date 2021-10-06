@@ -22,7 +22,16 @@ type WebhookRequest struct {
 	Headers   map[string]string `json:"headers"`
 	Body      string            `json:"body"`
 	Timeout   uint              `json:"timeout"`
-	Attempts  []Retry           `json:"attempts"`
+	Attempts  []Attempt         `json:"attempts"`
 	CreatedAt time.Time         `json:"createdAt"`
 	UpdatedAt time.Time         `json:"updatedAt"`
+}
+
+// Attempt :
+type Attempt struct {
+	Body        string            `json:"body"`
+	Headers     map[string]string `json:"headers"`
+	StatusCode  int               `json:"statusCode"`
+	ElapsedTime int64             `json:"elapsedTime"`
+	CreatedAt   time.Time         `json:"createdAt"`
 }

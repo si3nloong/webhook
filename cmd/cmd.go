@@ -26,6 +26,7 @@ const (
 type Config struct {
 	Enabled        bool   `mapstructure:"enabled"`
 	Port           int    `mapstructure:"port"`
+	Debug          bool   `mapstructure:"debug"`
 	Retry          uint   `mapstructure:"retry" validate:"lte=50"`
 	RetryMechanism string `mapstructure:"retry_mechanism"`
 	NoOfWorker     int    `mapstructure:"no_of_worker" validate:"required,lte=100"`
