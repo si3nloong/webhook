@@ -72,7 +72,7 @@ Please refer to [here](/app/http/graphql/README.md).
 
 ## 💡 gRPC API
 
-Please refer to [proto](/protobuf) files.
+Please refer to [here](/app/grpc/README.md).
 
 ## ⚠️ Disclaimer
 

@@ -1,7 +1,9 @@
 {
-  "name": "webhook-frontend",
+  "name": "webhook-ui",
   "version": "1.0.0",
-  "private": true,
+  "license": "MIT",
+  "author": "Si3nLoong <sianloong90@gmail.com> (https://github.com/si3nloong)",
+  "homepage": "https://github.com/si3nloong/webhook",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
