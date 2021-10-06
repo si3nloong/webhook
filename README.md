@@ -1,7 +1,6 @@
-<center>
+<p align="center">
   <img src="https://user-images.githubusercontent.com/28108597/136213335-8eb3bff5-cda2-4758-a723-2fce660892af.png" width="140px">
-</center>
-<br/>
+</p>
 
 # Webhook Server
 
