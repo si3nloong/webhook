@@ -23,6 +23,19 @@ export type Webhook = {
   updatedAt: string;
 };
 
+export type GetWebhooks = {
+  webhooks: {
+    nodes: [Webhook];
+    totalCount: number;
+    pageInfo: {
+      startCursor?: string;
+      endCursor?: string;
+      hasPreviousPage: boolean;
+      hasNextPage: boolean;
+    };
+  };
+};
+
 export const GET_WEBHOOKS = gql`
   query GetWebhooks {
     webhooks {
@@ -32,6 +45,13 @@ export const GET_WEBHOOKS = gql`
         method
         latestStatusCode
         createdAt
+      }
+      totalCount
+      pageInfo {
+        startCursor
+        endCursor
+        hasPreviousPage
+        hasNextPage
       }
     }
   }
@@ -51,6 +71,10 @@ export const FIND_WEBHOOK = gql`
       timeout
       attempts {
         body
+        headers {
+          key
+          value
+        }
         elapsedTime
         createdAt
       }

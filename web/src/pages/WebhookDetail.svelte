@@ -15,26 +15,50 @@
   });
 
   $: console.log($webhook);
+
+  const onClick = (idx: number) => (e: Event) => {
+    console.log(e);
+    const el = document.getElementById(`attempt-${idx}`);
+    el.classList.add("test");
+  };
 </script>
 
-<div>
+<div style="padding: 2rem;">
   {#if $webhook.data}
-    <header>{$webhook.data.webhook.method} {$webhook.data.webhook.url}</header>
-    <div>{$webhook.data.webhook.body}</div>
+    <h2>{$webhook.data.webhook.method} {$webhook.data.webhook.url}</h2>
     <div>{$webhook.data.webhook.timeout}ms (Milliseconds)</div>
-    <div>{$webhook.data.webhook.noOfRetries}</div>
-    {#each $webhook.data.webhook.headers as item}
-      <div>{item.key}={item.value}</div>
-    {/each}
+    <!-- <div>{$webhook.data.webhook.noOfRetries}</div> -->
+    <table>
+      <tr>
+        <td>Headers</td>
+        <td>
+          {#each $webhook.data.webhook.headers as item}
+            <div>{item.key} {item.value}</div>
+          {/each}
+        </td>
+      </tr>
+      <tr>
+        <td>Body</td>
+        <td>{$webhook.data.webhook.body}</td>
+      </tr>
+    </table>
     <div>
       {dayjs($webhook.data.webhook.createdAt).format("DD MMM YYYY HH:mmA")}
     </div>
     <div>
       {dayjs($webhook.data.webhook.updatedAt).format("DD MMM YYYY HH:mmA")}
     </div>
-    {#each $webhook.data.webhook.attempts as item}
-      <code>{item.body}</code>
-      <div>{item.createdAt}</div>
+    {#each $webhook.data.webhook.attempts as item, i}
+      <div id={`attempt-${i}`} class="attempt">
+        <header on:click={onClick(i)}>
+          <div>Attempt {i + 1}</div>
+          <div>{dayjs(item.createdAt).format("DD MMM YYYY, HH:mm:ssA")}</div>
+        </header>
+        <div class="content">
+          <code>{item.headers}</code>
+          <code>{item.body}</code>
+        </div>
+      </div>
     {/each}
   {:else if $webhook.error}
     <div>Webhook not found</div>
@@ -50,5 +74,18 @@
 
   header {
     font-weight: 600;
+  }
+
+  .attempt {
+    header {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .content {
+      overflow: hidden;
+      height: 0;
+    }
   }
 </style>

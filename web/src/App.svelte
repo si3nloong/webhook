@@ -22,6 +22,15 @@
   setClient(client);
 </script>
 
+<!-- <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bitter&display=swap"
+    rel="stylesheet"
+  />
+</head> -->
+
 <header id="appbar">
   <span id="appname" on:click={() => push("/")}>Webhook UI</span>
 </header>
@@ -29,7 +38,10 @@
   <Router {routes} />
 </main>
 
-<style>
+<style lang="scss">
+  @import url("https://fonts.googleapis.com/css2?family=Bitter&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
+
   :global(*) {
     margin: 0;
     padding: 0;
@@ -37,9 +49,10 @@
   }
 
   :global(html, body) {
+    position: relative;
     width: 100%;
     height: 100%;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Open Sans", sans-serif;
     font-size: 14px;
   }
 
