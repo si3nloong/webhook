@@ -65,7 +65,7 @@ type Webhook {
   body: String!
   attempts: [WebhookAttempt!]!
   timeout: Uint!
-  latestStatusCode: Uint!
+  lastStatusCode: Uint!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

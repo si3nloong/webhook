@@ -18,7 +18,7 @@ export type Webhook = {
   timeout: number;
   noOfRetries: number;
   attempts: [WebhookAttempt];
-  latestStatusCode: number;
+  lastStatusCode: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -37,13 +37,13 @@ export type GetWebhooks = {
 };
 
 export const GET_WEBHOOKS = gql`
-  query GetWebhooks {
-    webhooks {
+  query GetWebhooks($first: Uint!) {
+    webhooks(first: $first, filter: {}) {
       nodes {
         id
         url
         method
-        latestStatusCode
+        lastStatusCode
         createdAt
       }
       totalCount
@@ -69,6 +69,7 @@ export const FIND_WEBHOOK = gql`
       }
       body
       timeout
+      lastStatusCode
       attempts {
         body
         headers {

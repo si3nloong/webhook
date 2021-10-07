@@ -55,30 +55,34 @@ func New(cfg cmd.Config) (*db, error) {
 	return v, nil
 }
 
-func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error) {
-	var buf bytes.Buffer
-	buf.WriteString(`{
-		"sort" : [
-			{ "createdAt" : "desc" }
-		]
-	}`)
-	res, err := c.client.Search(
-		c.client.Search.WithContext(ctx),
-		c.client.Search.WithIndex(c.indexName),
-		c.client.Search.WithBody(&buf),
-		// c.client.Search.WithTrackTotalHits(true),
-	)
+func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, totalCount int64, err error) {
+	opts := make([]func(*esapi.SearchRequest), 0)
+
+	opts = append(opts, c.client.Search.WithContext(ctx))
+	opts = append(opts, c.client.Search.WithIndex(c.indexName))
+	opts = append(opts, c.client.Search.WithSize(int(limit+1)))
+	opts = append(opts, c.client.Search.WithTrackTotalHits(true))
+	opts = append(opts, c.client.Search.WithSort("createdAt:desc"))
+	// opts = append(opts, c.client.Search.WithPretty())
+
+	// if after != nil {
+	// 	// opts = append(opts, c.client.Search.WithQuery(fmt.Sprintf(`{"range": {"id": {"gte": %q}}}`, curCursor)))
+	// }
+	res, err := c.client.Search(opts...)
 	if err != nil {
-		return nil, "", err
+		return nil, "", 0, err
 	}
 	defer res.Body.Close()
 
-	buf.Reset()
+	var buf bytes.Buffer
 	if _, err := buf.ReadFrom(res.Body); err != nil {
-		return nil, "", err
+		return nil, "", 0, err
 	}
 
+	// log.Println(buf.String())
+	totalCount = gjson.GetBytes(buf.Bytes(), "hits.total.value").Int()
 	result := gjson.GetBytes(buf.Bytes(), "hits.hits").Array()
+	noOfRecord := uint(len(result))
 
 	for _, r := range result {
 		data := entity.WebhookRequest{}
@@ -88,6 +92,13 @@ func (c *db) GetWebhooks(ctx context.Context, curCursor string, limit uint) (dat
 		}
 
 		datas = append(datas, &data)
+	}
+
+	// means has cursor
+	if noOfRecord > limit {
+		last := datas[limit]
+		nextCursor = last.ID.String()
+		datas = datas[:limit]
 	}
 	return
 }

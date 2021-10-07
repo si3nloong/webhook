@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -65,8 +67,27 @@ func main() {
 		},
 	}).Handler)
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{WebhookServer: ws}}))
+	resolver := generated.Config{Resolvers: &graph.Resolver{WebhookServer: ws}}
+	resolver.Directives.Validate = func(ctx context.Context, obj interface{}, next graphql.Resolver, rule string) (interface{}, error) {
+		pc := graphql.GetPathContext(ctx)
+		// graphql.GetFieldContext(ctx)
+		if pc.Field == nil {
+			return next(ctx)
+		}
 
+		v, ok := obj.(map[string]interface{})
+		if !ok {
+			return next(ctx)
+		}
+
+		if err := ws.VarCtx(ctx, v[*pc.Field], rule); err != nil {
+			// log.Println(reflect.TypeOf(err))
+			return nil, err
+		}
+
+		return next(ctx)
+	}
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(resolver))
 	// http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	r.Handle("/", srv)
 

@@ -5,11 +5,18 @@ import (
 	"github.com/si3nloong/webhook/app/http/graphql/graph/model"
 )
 
-func ToWebhookConnection(in []*entity.WebhookRequest) (conn *model.WebhookConnection) {
+func ToWebhookConnection(in []*entity.WebhookRequest, curCursor, nextCursor string, totalCount int64) (conn *model.WebhookConnection) {
 	conn = new(model.WebhookConnection)
 	conn.Nodes = ToLogs(in)
 	conn.PageInfo = new(model.PageInfo)
-	conn.TotalCount = 100
+	if curCursor != "" {
+		conn.PageInfo.StartCursor = &curCursor
+	}
+	if nextCursor != "" {
+		conn.PageInfo.EndCursor = &nextCursor
+		conn.PageInfo.HasNextPage = true
+	}
+	conn.TotalCount = uint64(totalCount)
 	return
 }
 
@@ -44,6 +51,7 @@ func ToWebhook(in *entity.WebhookRequest) (out *model.Webhook) {
 		attempt.StatusCode = uint(a.StatusCode)
 		attempt.CreatedAt = a.CreatedAt
 
+		out.LastStatusCode = a.StatusCode
 		out.Attempts[idx] = &attempt
 	}
 	out.CreatedAt = in.CreatedAt

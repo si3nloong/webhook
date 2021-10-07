@@ -22,16 +22,16 @@ type PageInfo struct {
 }
 
 type Webhook struct {
-	ID               string            `json:"id"`
-	URL              string            `json:"url"`
-	Method           HTTPMethod        `json:"method"`
-	Headers          []*HTTPHeader     `json:"headers"`
-	Body             string            `json:"body"`
-	Attempts         []*WebhookAttempt `json:"attempts"`
-	Timeout          uint              `json:"timeout"`
-	LatestStatusCode uint              `json:"latestStatusCode"`
-	CreatedAt        time.Time         `json:"createdAt"`
-	UpdatedAt        time.Time         `json:"updatedAt"`
+	ID             string            `json:"id"`
+	URL            string            `json:"url"`
+	Method         HTTPMethod        `json:"method"`
+	Headers        []*HTTPHeader     `json:"headers"`
+	Body           string            `json:"body"`
+	Attempts       []*WebhookAttempt `json:"attempts"`
+	Timeout        uint              `json:"timeout"`
+	LastStatusCode uint              `json:"lastStatusCode"`
+	CreatedAt      time.Time         `json:"createdAt"`
+	UpdatedAt      time.Time         `json:"updatedAt"`
 }
 
 type WebhookAttempt struct {

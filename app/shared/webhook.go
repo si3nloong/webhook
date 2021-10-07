@@ -36,7 +36,7 @@ fire webhook ---> record stat (add success count or log error)
 
 type Repository interface {
 	CreateWebhook(ctx context.Context, data *entity.WebhookRequest) error
-	GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, err error)
+	GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, totalCount int64, err error)
 	FindWebhook(ctx context.Context, id string) (*entity.WebhookRequest, error)
 	UpdateWebhook(ctx context.Context, id string, attempt *entity.Attempt) error
 }
@@ -48,6 +48,7 @@ type MessageQueue interface {
 type WebhookServer interface {
 	Repository
 	Validate(src interface{}) error
+	VarCtx(ctx context.Context, src interface{}, tag string) error
 	Publish(ctx context.Context, req *pb.SendWebhookRequest) (*entity.WebhookRequest, error)
 }
 
@@ -109,6 +110,10 @@ func NewServer(cfg cmd.Config) WebhookServer {
 
 func (s *webhookServer) Validate(src interface{}) error {
 	return s.v.Struct(src)
+}
+
+func (s *webhookServer) VarCtx(ctx context.Context, src interface{}, tag string) error {
+	return s.v.VarCtx(ctx, src, tag)
 }
 
 func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest) (*entity.WebhookRequest, error) {
@@ -232,7 +237,7 @@ func (s *webhookServer) fireWebhook(data *entity.WebhookRequest) error {
 			})
 			att.Body = body
 			att.ElapsedTime = time.Now().UTC().Sub(startTime).Milliseconds()
-			att.StatusCode = statusCode
+			att.StatusCode = uint(statusCode)
 			att.CreatedAt = utcNow
 
 			if err := s.UpdateWebhook(ctx, data.ID.String(), &att); err != nil {

@@ -8,7 +8,7 @@ type Webhook struct {
 	Headers        map[string]string `json:"headers"`
 	Body           string            `json:"body"`
 	Timeout        uint              `json:"timeout"`
-	LastStatusCode int               `json:"lastStatusCode"`
+	LastStatusCode uint              `json:"lastStatusCode"`
 	CreatedAt      DateTime          `json:"createdAt"`
 	UpdatedAt      DateTime          `json:"updatedAt"`
 }
@@ -24,7 +24,7 @@ type WebhookDetail struct {
 type WebhookRetry struct {
 	Headers     map[string]string `json:"headers"`
 	Body        string            `json:"body"`
-	StatusCode  int               `json:"statusCode"`
+	StatusCode  uint              `json:"statusCode"`
 	ElapsedTime int64             `json:"elapsedTime"`
 	CreatedAt   DateTime          `json:"created"`
 }

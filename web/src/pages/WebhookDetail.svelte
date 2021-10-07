@@ -14,12 +14,9 @@
     },
   });
 
-  $: console.log($webhook);
-
+  let selectedIndex: number[] = [];
   const onClick = (idx: number) => (e: Event) => {
-    console.log(e);
-    const el = document.getElementById(`attempt-${idx}`);
-    el.classList.add("test");
+    selectedIndex = [...selectedIndex, idx];
   };
 </script>
 
@@ -49,14 +46,30 @@
       {dayjs($webhook.data.webhook.updatedAt).format("DD MMM YYYY HH:mmA")}
     </div>
     {#each $webhook.data.webhook.attempts as item, i}
-      <div id={`attempt-${i}`} class="attempt">
+      <div class="attempt">
         <header on:click={onClick(i)}>
           <div>Attempt {i + 1}</div>
-          <div>{dayjs(item.createdAt).format("DD MMM YYYY, HH:mm:ssA")}</div>
+          <div>
+            ({item.elapsedTime}ms) {dayjs(item.createdAt).format(
+              "DD MMM YYYY, HH:mm:ssA"
+            )}
+          </div>
         </header>
-        <div class="content">
-          <code>{item.headers}</code>
-          <code>{item.body}</code>
+        <div class="content" class:open={selectedIndex.includes(i)}>
+          <table>
+            <tr>
+              <td>Headers</td>
+              <td>
+                {#each item.headers as item}
+                  <div>{item.key} {item.value}</div>
+                {/each}
+              </td>
+            </tr>
+            <tr>
+              <td>Body</td>
+              <td><code>{item.body}</code></td>
+            </tr>
+          </table>
         </div>
       </div>
     {/each}
@@ -86,6 +99,11 @@
     .content {
       overflow: hidden;
       height: 0;
+      transition: all 0.5s;
+
+      &.open {
+        height: auto;
+      }
     }
   }
 </style>

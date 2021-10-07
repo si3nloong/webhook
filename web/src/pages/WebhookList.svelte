@@ -7,16 +7,28 @@
   import Status from "../components/Status.svelte";
   import Button from "../components/Button.svelte";
 
-  const webhooks = query<GetWebhooks>(GET_WEBHOOKS);
-
-  console.log($webhooks);
+  let limit = 10;
+  let webhooks = query<GetWebhooks>(GET_WEBHOOKS, {
+    variables: {
+      first: limit,
+    },
+  });
 
   const onFormSubmit = (e: Event) => {
+    const els = (<HTMLFormElement>e.currentTarget).elements;
+    for (let i = 0; i < els.length; i++) {
+      console.log(els[i]);
+    }
     console.log((<HTMLFormElement>e.currentTarget).elements);
   };
 
   const onGoTo = (cursor?: string) => (e: Event) => {
-    console.log(cursor);
+    webhooks = query<GetWebhooks>(GET_WEBHOOKS, {
+      variables: {
+        first: limit,
+        after: cursor,
+      },
+    });
   };
 </script>
 
@@ -54,7 +66,9 @@
       <div><input name="endTime" type="time" /></div>
     </section>
     <div>Limit Results</div>
-    <div><input name="limit" type="number" pattern="[0-9]+" value="50" /></div>
+    <div>
+      <input name="first" type="number" pattern="[0-9]+" value={limit} />
+    </div>
     <Button
       type="submit"
       style="margin-top: 1rem; background: #7C3AED; color: #fff; width: 100%"
@@ -83,7 +97,7 @@
         </tr>
         {#each $webhooks.data.webhooks.nodes as item}
           <tr>
-            <td><Status value={item.latestStatusCode.toString()} /></td>
+            <td><Status value={item.lastStatusCode} /></td>
             <td
               ><span class="link" on:click={() => push(`/webhook/${item.id}`)}
                 >{item.id}</span

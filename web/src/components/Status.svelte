@@ -1,8 +1,15 @@
 <script lang="ts">
-  export let value = "";
+  export let value = 0;
+
+  let paths: [string, string] = ["unknown", "Unknown"];
+  if (value <= 200) {
+    paths = ["succeeded", value.toString()];
+  } else if (value >= 500) {
+    paths = ["failed", value.toString()];
+  }
 </script>
 
-<span class="status success">Success</span>
+<span class="status {paths[0]}">{paths[1]}</span>
 
 <style lang="scss">
   .status {
@@ -15,9 +22,14 @@
     padding: 3px 8px;
     border-radius: 10px;
 
-    &.success {
-      background: #d1fae5;
+    &.succeeded {
       color: #065f46;
+      background: #d1fae5;
+    }
+
+    &.failed {
+      color: #991b1b;
+      background: #fecaca;
     }
   }
 </style>

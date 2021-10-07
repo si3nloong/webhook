@@ -65,16 +65,16 @@ type ComplexityRoot struct {
 	}
 
 	Webhook struct {
-		Attempts         func(childComplexity int) int
-		Body             func(childComplexity int) int
-		CreatedAt        func(childComplexity int) int
-		Headers          func(childComplexity int) int
-		ID               func(childComplexity int) int
-		LatestStatusCode func(childComplexity int) int
-		Method           func(childComplexity int) int
-		Timeout          func(childComplexity int) int
-		URL              func(childComplexity int) int
-		UpdatedAt        func(childComplexity int) int
+		Attempts       func(childComplexity int) int
+		Body           func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		Headers        func(childComplexity int) int
+		ID             func(childComplexity int) int
+		LastStatusCode func(childComplexity int) int
+		Method         func(childComplexity int) int
+		Timeout        func(childComplexity int) int
+		URL            func(childComplexity int) int
+		UpdatedAt      func(childComplexity int) int
 	}
 
 	WebhookAttempt struct {
@@ -213,12 +213,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Webhook.ID(childComplexity), true
 
-	case "Webhook.latestStatusCode":
-		if e.complexity.Webhook.LatestStatusCode == nil {
+	case "Webhook.lastStatusCode":
+		if e.complexity.Webhook.LastStatusCode == nil {
 			break
 		}
 
-		return e.complexity.Webhook.LatestStatusCode(childComplexity), true
+		return e.complexity.Webhook.LastStatusCode(childComplexity), true
 
 	case "Webhook.method":
 		if e.complexity.Webhook.Method == nil {
@@ -421,7 +421,7 @@ type Webhook {
   body: String!
   attempts: [WebhookAttempt!]!
   timeout: Uint!
-  latestStatusCode: Uint!
+  lastStatusCode: Uint!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -1238,7 +1238,7 @@ func (ec *executionContext) _Webhook_timeout(ctx context.Context, field graphql.
 	return ec.marshalNUint2uint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Webhook_latestStatusCode(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
+func (ec *executionContext) _Webhook_lastStatusCode(ctx context.Context, field graphql.CollectedField, obj *model.Webhook) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1256,7 +1256,7 @@ func (ec *executionContext) _Webhook_latestStatusCode(ctx context.Context, field
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.LatestStatusCode, nil
+		return obj.LastStatusCode, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2925,8 +2925,8 @@ func (ec *executionContext) _Webhook(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "latestStatusCode":
-			out.Values[i] = ec._Webhook_latestStatusCode(ctx, field, obj)
+		case "lastStatusCode":
+			out.Values[i] = ec._Webhook_lastStatusCode(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

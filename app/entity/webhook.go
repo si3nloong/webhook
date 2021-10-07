@@ -31,7 +31,7 @@ type WebhookRequest struct {
 type Attempt struct {
 	Body        string            `json:"body"`
 	Headers     map[string]string `json:"headers"`
-	StatusCode  int               `json:"statusCode"`
+	StatusCode  uint              `json:"statusCode"`
 	ElapsedTime int64             `json:"elapsedTime"`
 	CreatedAt   time.Time         `json:"createdAt"`
 }
