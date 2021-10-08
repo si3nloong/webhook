@@ -15,7 +15,7 @@ import (
 func (s *Server) listWebhooks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	datas, _, err := s.GetWebhooks(ctx, "", 100)
+	datas, _, totalCount, err := s.GetWebhooks(ctx, "", 100)
 	if err != nil {
 		return
 	}
@@ -26,6 +26,7 @@ func (s *Server) listWebhooks(w http.ResponseWriter, r *http.Request) {
 		items.Items = append(items.Items, transformer.ToWebhook(data))
 	}
 	items.Size = len(datas)
+	items.Count = totalCount
 	items.Links.Self = r.URL.Host
 	items.Links.Previous = ""
 	items.Links.Self = ""

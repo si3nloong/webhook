@@ -13,7 +13,7 @@ func (s *Server) GetWebhooks(ctx context.Context, req *pb.ListWebhooksRequest) (
 		return nil, status.Convert(err).Err()
 	}
 
-	datas, nextCursor, err := s.ws.GetWebhooks(ctx, req.PageToken, 100)
+	datas, nextCursor, _, err := s.ws.GetWebhooks(ctx, req.PageToken, 100)
 	if err != nil {
 		return nil, status.Convert(err).Err()
 	}
