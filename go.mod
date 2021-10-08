@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis/v8 v8.11.4
-	github.com/nats-io/nats.go v1.12.3
+	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/valyala/fasthttp v1.30.0
