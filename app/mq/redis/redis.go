@@ -3,7 +3,6 @@ package redis
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"strings"
 	"time"
 
@@ -47,9 +46,7 @@ func New(cfg cmd.Config, cb func(delivery rmq.Delivery)) (*redisMQ, error) {
 		return nil, err
 	}
 
-	log.Println("ping redis")
-
-	conn, err := rmq.OpenConnectionWithRedisClient(cfg.MessageQueue.Topic, mq.client.(*redis.Client), mq.err)
+	conn, err := rmq.OpenConnectionWithRedisClient(cfg.MessageQueue.Topic, mq.client, mq.err)
 	if err != nil {
 		return nil, err
 	}
