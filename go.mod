@@ -22,7 +22,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
-	github.com/nsqio/go-nsq v1.0.8
+	github.com/nsqio/go-nsq v1.1.0
 	github.com/rs/cors v1.8.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.0
