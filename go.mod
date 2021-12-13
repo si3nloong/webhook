@@ -7,7 +7,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/cobra v1.2.1
-	github.com/spf13/viper v1.9.0
+	github.com/spf13/viper v1.10.0
 	github.com/valyala/fasthttp v1.31.0
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
