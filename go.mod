@@ -8,7 +8,7 @@ require (
 	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
-	github.com/valyala/fasthttp v1.31.0
+	github.com/valyala/fasthttp v1.32.0
 	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 )
