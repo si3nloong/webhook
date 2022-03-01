@@ -27,5 +27,5 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.14.0
-	github.com/vektah/gqlparser/v2 v2.3.1
+	github.com/vektah/gqlparser/v2 v2.4.0
 )
