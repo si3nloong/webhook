@@ -3,7 +3,7 @@ module github.com/si3nloong/webhook
 go 1.15
 
 require (
-	github.com/go-playground/validator/v10 v10.10.0
+	github.com/go-playground/validator/v10 v10.10.1
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/cobra v1.3.0
