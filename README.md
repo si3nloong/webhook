@@ -62,9 +62,9 @@ message_queue:
   <!-- - CLI ready. -->
   <!-- - Support tracing, [Jaeger](https://github.com/jaegertracing/jaeger), [OpenCensus](https://opencensus.io/) -->
 
-## ⚡️ RESTful APIs
+## ⚡️ rest APIs
 
-Please refer to [here](/app/http/restful/README.md).
+Please refer to [here](/app/http/rest/README.md).
 
 ## ⚡️ GraphQL API
 

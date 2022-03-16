@@ -1,9 +1,9 @@
-# RESTful API
+# rest API
 
 - Health check - [/health]()
-- Get webhook list - [/v1/webhooks](/app/http/restful/README.md#get-webhooks)
-- Find webhook by id - [/v1/webhook/:id](/app/http/restful/README.md#find-webhook)
-- Send a webhook - [/v1/webhook/send](/app/http/restful/README.md#send-webhook)
+- Get webhook list - [/v1/webhooks](/app/http/rest/README.md#get-webhooks)
+- Find webhook by id - [/v1/webhook/:id](/app/http/rest/README.md#find-webhook)
+- Send a webhook - [/v1/webhook/send](/app/http/rest/README.md#send-webhook)
 
 ## Get Webhooks
 

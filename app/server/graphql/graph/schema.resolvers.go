@@ -7,9 +7,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/si3nloong/webhook/app/http/graphql/graph/generated"
-	"github.com/si3nloong/webhook/app/http/graphql/graph/model"
-	"github.com/si3nloong/webhook/app/http/graphql/transformer"
+	"github.com/si3nloong/webhook/app/server/graphql/graph/generated"
+	"github.com/si3nloong/webhook/app/server/graphql/graph/model"
+	"github.com/si3nloong/webhook/app/server/graphql/transformer"
 )
 
 func (r *queryResolver) Webhooks(ctx context.Context, after *string, before *string, first *uint, last *uint, filter json.RawMessage) (*model.WebhookConnection, error) {

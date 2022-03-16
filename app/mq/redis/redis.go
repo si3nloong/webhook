@@ -21,7 +21,7 @@ type redisMQ struct {
 	cleaner *rmq.Cleaner
 }
 
-func New(cfg cmd.Config, cb func(delivery rmq.Delivery)) (*redisMQ, error) {
+func New(cfg *cmd.Config, cb func(delivery rmq.Delivery)) (*redisMQ, error) {
 	mq := new(redisMQ)
 	mq.err = make(chan error)
 

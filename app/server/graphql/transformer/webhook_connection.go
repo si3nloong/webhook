@@ -2,7 +2,7 @@ package transformer
 
 import (
 	"github.com/si3nloong/webhook/app/entity"
-	"github.com/si3nloong/webhook/app/http/graphql/graph/model"
+	"github.com/si3nloong/webhook/app/server/graphql/graph/model"
 )
 
 func ToWebhookConnection(in []*entity.WebhookRequest, curCursor, nextCursor string, totalCount int64) (conn *model.WebhookConnection) {

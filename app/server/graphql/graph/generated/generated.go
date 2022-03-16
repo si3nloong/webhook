@@ -15,8 +15,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/si3nloong/webhook/app/http/graphql/graph/model"
-	"github.com/si3nloong/webhook/app/http/graphql/graph/scalar"
+	"github.com/si3nloong/webhook/app/server/graphql/graph/model"
+	"github.com/si3nloong/webhook/app/server/graphql/graph/scalar"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )

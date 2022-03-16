@@ -18,7 +18,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/segmentio/ksuid"
-	es "github.com/si3nloong/webhook/app/database/elasticsearch"
 	"github.com/si3nloong/webhook/app/entity"
 	"github.com/si3nloong/webhook/app/mq/nats"
 	"github.com/si3nloong/webhook/app/mq/redis"
@@ -48,56 +47,78 @@ type MessageQueue interface {
 type WebhookServer interface {
 	Repository
 	Validate(src interface{}) error
-	VarCtx(ctx context.Context, src interface{}, tag string) error
 	Publish(ctx context.Context, req *pb.SendWebhookRequest) (*entity.WebhookRequest, error)
+	LogError(err error)
+
+	// TODO: better name (rename please)
+	VarCtx(ctx context.Context, src interface{}, tag string) error
 }
 
 type webhookServer struct {
-	// logger log.Logger
 	Repository
 	v  *validator.Validate
 	mq MessageQueue
 }
 
-func NewServer(cfg cmd.Config) WebhookServer {
+func NewServer(cfg *cmd.Config) WebhookServer {
 	var (
-		svr = new(webhookServer)
+		svr = &webhookServer{
+			v: validator.New(),
+		}
 		err error
 	)
 
-	svr.v = validator.New()
+	// // setup Database
+	// switch cfg.DB.Engine {
+	// case cmd.DatabaseEngineElasticsearch:
+	// 	svr.Repository, err = es.New(cfg)
+	// default:
+	// 	panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
+	// }
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// setup Database
-	switch cfg.DB.Engine {
-	case cmd.DatabaseEngineElasticsearch:
-		svr.Repository, err = es.New(cfg)
-	default:
-		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
-	}
-	if err != nil {
-		panic(err)
-	}
+	log.Println("debug 2")
+	log.Println("Database engine =>", cfg.DB.Engine)
+	log.Println("Message queue engine =>", cfg.MessageQueue.Engine)
 
 	// setup Message Queueing
 	switch cfg.MessageQueue.Engine {
-	case cmd.MessageQueueEngineNSQ:
-	case cmd.MessageQueueEngineNats:
-		svr.mq, err = nats.New(cfg)
 	case cmd.MessageQueueEngineRedis:
-		svr.mq, err = redis.New(cfg, func(delivery rmq.Delivery) {
-			data := entity.WebhookRequest{}
-			if err := json.Unmarshal([]byte(delivery.Payload()), &data); err != nil {
-				return
-			}
+		{
+			svr.mq, err = redis.New(cfg, func(delivery rmq.Delivery) {
+				var (
+					data = entity.WebhookRequest{}
+					errs error
+				)
 
-			if err := svr.fireWebhook(&data); err != nil {
-				delivery.Reject()
-				log.Println("Error =>", err)
-				return
-			}
+				// capture error when it's end
+				defer func() {
+					if errs != nil {
+						svr.LogError(errs)
+					}
+				}()
 
-			delivery.Ack()
-		})
+				if errs = json.Unmarshal([]byte(delivery.Payload()), &data); err != nil {
+					return
+				}
+
+				if errs = svr.fireWebhook(&data); errs != nil {
+					errs = delivery.Reject()
+					return
+				}
+
+				errs = delivery.Ack()
+			})
+		}
+	case cmd.MessageQueueEngineNSQ:
+		{
+		}
+	case cmd.MessageQueueEngineNats:
+		{
+			svr.mq, err = nats.New(cfg)
+		}
 	default:
 		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
 	}
@@ -114,6 +135,10 @@ func (s *webhookServer) Validate(src interface{}) error {
 
 func (s *webhookServer) VarCtx(ctx context.Context, src interface{}, tag string) error {
 	return s.v.VarCtx(ctx, src, tag)
+}
+
+func (*webhookServer) LogError(err error) {
+	log.Println("Error", err)
 }
 
 func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest) (*entity.WebhookRequest, error) {

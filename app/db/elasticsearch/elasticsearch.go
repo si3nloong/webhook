@@ -23,7 +23,7 @@ type db struct {
 	timeout   time.Duration
 }
 
-func New(cfg cmd.Config) (*db, error) {
+func New(cfg *cmd.Config) (*db, error) {
 	esConfig := elasticsearch.Config{
 		Addresses: []string{
 			cfg.Elasticsearch.Host,

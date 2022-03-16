@@ -2,7 +2,7 @@ package transformer
 
 import (
 	"github.com/si3nloong/webhook/app/entity"
-	"github.com/si3nloong/webhook/app/http/restful/dto"
+	"github.com/si3nloong/webhook/app/server/rest/dto"
 )
 
 func ToWebhook(data *entity.WebhookRequest) (o *dto.Webhook) {

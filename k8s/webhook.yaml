@@ -6,7 +6,7 @@ metadata:
     app: webhook
 spec:
   ports:
-    # HTTP/RESTful server
+    # HTTP/rest server
     - port: 3000
       targetPort: 3000
       protocol: TCP

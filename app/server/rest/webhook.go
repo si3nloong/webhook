@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/si3nloong/webhook/app/http/restful/dto"
-	"github.com/si3nloong/webhook/app/http/restful/transformer"
+	"github.com/si3nloong/webhook/app/server/rest/dto"
+	"github.com/si3nloong/webhook/app/server/rest/transformer"
 	pb "github.com/si3nloong/webhook/protobuf"
 	"github.com/valyala/fasthttp"
 )

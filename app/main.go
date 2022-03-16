@@ -11,8 +11,8 @@ import (
 
 	validator "github.com/go-playground/validator/v10"
 
-	rpc "github.com/si3nloong/webhook/app/grpc"
-	restful "github.com/si3nloong/webhook/app/http/restful"
+	rpc "github.com/si3nloong/webhook/app/server/grpc"
+	rest "github.com/si3nloong/webhook/app/server/rest"
 	"github.com/si3nloong/webhook/app/shared"
 	"github.com/si3nloong/webhook/app/util"
 	"github.com/si3nloong/webhook/cmd"
@@ -26,7 +26,7 @@ func main() {
 		grpcSvr *grpc.Server
 		quit    = make(chan os.Signal, 1)
 		v       = validator.New()
-		cfg     = cmd.Config{}
+		wsCfg   = new(cmd.Config)
 	)
 
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -42,7 +42,6 @@ func main() {
 	viper.AddConfigPath(pwd)
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
-
 	viper.SetEnvPrefix("webhook")
 	viper.AutomaticEnv()
 
@@ -50,42 +49,40 @@ func main() {
 		panic(err)
 	}
 
-	// log.Println("config =>", viper.ConfigFileUsed())
-
 	// set the default value for configuration
-	cfg.SetDefault()
+	wsCfg.SetDefault()
 	// read config into struct
-	if err := viper.Unmarshal(&cfg); err != nil {
+	if err := viper.Unmarshal(&wsCfg); err != nil {
 		panic(err)
 	}
 
 	// validate yaml value
-	if err := v.StructCtx(ctx, cfg); err != nil {
+	if err := v.StructCtx(ctx, wsCfg); err != nil {
 		panic(err)
 	}
 
-	ws := shared.NewServer(cfg)
+	ws := shared.NewServer(wsCfg)
 
 	// serve HTTP
-	if cfg.Enabled {
+	if wsCfg.Enabled {
 		go func() error {
-			log.Printf("HTTP server serve at %v", cfg.Port)
-			log.Fatal(http.ListenAndServe(util.FormatPort(cfg.Port), restful.NewServer(ws)))
+			log.Printf("HTTP server serve at %v", wsCfg.Port)
+			log.Fatal(http.ListenAndServe(util.FormatPort(wsCfg.Port), rest.NewServer(ws)))
 			return nil
 		}()
 	}
 
 	// serve gRPC
-	if cfg.GRPC.Enabled {
-		grpcSvr = rpc.NewServer(cfg, ws)
+	if wsCfg.GRPC.Enabled {
+		grpcSvr = rpc.NewServer(wsCfg, ws)
 
 		go func() error {
-			lis, err := net.Listen("tcp", util.FormatPort(cfg.GRPC.Port))
+			lis, err := net.Listen("tcp", util.FormatPort(wsCfg.GRPC.Port))
 			if err != nil {
 				return err
 			}
 
-			log.Printf("gRPC server serve at %v", cfg.GRPC.Port)
+			log.Printf("gRPC server serve at %v", wsCfg.GRPC.Port)
 			if err := grpcSvr.Serve(lis); err != nil {
 				return err
 			}

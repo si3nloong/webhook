@@ -13,7 +13,7 @@ type Server struct {
 	pb.UnimplementedWebhookServiceServer
 }
 
-func NewServer(cfg cmd.Config, ws shared.WebhookServer) *grpc.Server {
+func NewServer(cfg *cmd.Config, ws shared.WebhookServer) *grpc.Server {
 	opts := make([]grpc.ServerOption, 0)
 	if cfg.GRPC.ApiKey != "" {
 		opts = append(opts, grpc.UnaryInterceptor(grpcauth.UnaryServerInterceptor(authorizationInterceptor(cfg.GRPC.ApiKey))))

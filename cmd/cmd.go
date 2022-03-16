@@ -73,6 +73,7 @@ func (c *Config) SetDefault() {
 	c.Port = 3000
 	c.Monitor.Port = 3222
 	c.GRPC.Port = 5222
+	// c.GRPC.Enabled = true
 	c.MessageQueue.Redis.Addr = "localhost:6379"
 	c.MessageQueue.NATS.JetStream = true
 }

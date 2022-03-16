@@ -17,13 +17,13 @@ import (
 )
 
 type natsMQ struct {
-	sync.RWMutex
+	mu   sync.RWMutex
 	subj string
 	js   nats.JetStreamContext
 	subs []*nats.Subscription
 }
 
-func New(cfg cmd.Config) (*natsMQ, error) {
+func New(cfg *cmd.Config) (*natsMQ, error) {
 	q := new(natsMQ)
 
 	// Connect to NATS
