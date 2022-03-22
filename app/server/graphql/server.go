@@ -51,7 +51,7 @@ func main() {
 		port = defaultPort
 	}
 
-	ws := shared.NewServer(cfg)
+	ws := shared.NewServer(&cfg)
 
 	r := mux.NewRouter()
 

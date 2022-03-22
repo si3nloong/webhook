@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	validator "github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 
 	rpc "github.com/si3nloong/webhook/app/server/grpc"
 	rest "github.com/si3nloong/webhook/app/server/rest"

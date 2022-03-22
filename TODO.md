@@ -1,3 +1,6 @@
 - log request and response in database
 - support pagination (after and before)
 - support filter
+- documentation
+- test
+- change to sveltekit instead

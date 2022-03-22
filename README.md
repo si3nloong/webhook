@@ -54,12 +54,13 @@ message_queue:
 - [GraphQL](https://graphql.org/) API ready.
 - Support [gRPC](https://grpc.io/) protocol.
 - Allow to send a webhook using [cURL](https://curl.se/) command
-- Support [Redis](https://redis.io/), [NATS](https://nats.io/), NSQ as [Message Queue](https://en.wikipedia.org/wiki/Message_queue) engine.
+- Support Inmemory, [Redis](https://redis.io/), [NATS](https://nats.io/), NSQ as [Message Queue](https://en.wikipedia.org/wiki/Message_queue) engine.
 - Support [Elasticsearch](https://www.elastic.co/) as Persistent Volume engine.
 - Dockerize.
 - Configurable.
-- Kubernetes ready.
-  <!-- - CLI ready. -->
+- [Kubernetes](https://kubernetes.io/) ready.
+- Headless friendly.
+- CLI ready.
   <!-- - Support tracing, [Jaeger](https://github.com/jaegertracing/jaeger), [OpenCensus](https://opencensus.io/) -->
 
 ## ⚡️ rest APIs

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"reflect"
@@ -33,27 +32,6 @@ get from queue ---> fire webhook
 fire webhook ---> record stat (add success count or log error)
 */
 
-type Repository interface {
-	CreateWebhook(ctx context.Context, data *entity.WebhookRequest) error
-	GetWebhooks(ctx context.Context, curCursor string, limit uint) (datas []*entity.WebhookRequest, nextCursor string, totalCount int64, err error)
-	FindWebhook(ctx context.Context, id string) (*entity.WebhookRequest, error)
-	UpdateWebhook(ctx context.Context, id string, attempt *entity.Attempt) error
-}
-
-type MessageQueue interface {
-	Publish(ctx context.Context, data *entity.WebhookRequest) error
-}
-
-type WebhookServer interface {
-	Repository
-	Validate(src interface{}) error
-	Publish(ctx context.Context, req *pb.SendWebhookRequest) (*entity.WebhookRequest, error)
-	LogError(err error)
-
-	// TODO: better name (rename please)
-	VarCtx(ctx context.Context, src interface{}, tag string) error
-}
-
 type webhookServer struct {
 	Repository
 	v  *validator.Validate
@@ -62,24 +40,23 @@ type webhookServer struct {
 
 func NewServer(cfg *cmd.Config) WebhookServer {
 	var (
+		err error
 		svr = &webhookServer{
 			v: validator.New(),
 		}
-		err error
 	)
 
-	// // setup Database
-	// switch cfg.DB.Engine {
-	// case cmd.DatabaseEngineElasticsearch:
+	// setup Database
+	switch cfg.DB.Engine {
+	case cmd.DatabaseEngineElasticsearch:
 	// 	svr.Repository, err = es.New(cfg)
-	// default:
-	// 	panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
-	// }
-	// if err != nil {
-	// 	panic(err)
-	// }
+	default:
+		// 	panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
+	}
+	if err != nil {
+		panic(err)
+	}
 
-	log.Println("debug 2")
 	log.Println("Database engine =>", cfg.DB.Engine)
 	log.Println("Message queue engine =>", cfg.MessageQueue.Engine)
 
@@ -87,29 +64,30 @@ func NewServer(cfg *cmd.Config) WebhookServer {
 	switch cfg.MessageQueue.Engine {
 	case cmd.MessageQueueEngineRedis:
 		{
-			svr.mq, err = redis.New(cfg, func(delivery rmq.Delivery) {
+			svr.mq, err = redis.New(cfg, func(msg rmq.Delivery) {
 				var (
 					data = entity.WebhookRequest{}
 					errs error
 				)
 
-				// capture error when it's end
+				// capture error if exists when it's end
 				defer func() {
 					if errs != nil {
-						svr.LogError(errs)
+						svr.logErrorIfAny(errs)
+						svr.logErrorIfAny(msg.Reject())
+						return
 					}
+
+					svr.logErrorIfAny(msg.Ack())
 				}()
 
-				if errs = json.Unmarshal([]byte(delivery.Payload()), &data); err != nil {
+				if errs = json.Unmarshal([]byte(msg.Payload()), &data); errs != nil {
 					return
 				}
 
 				if errs = svr.fireWebhook(&data); errs != nil {
-					errs = delivery.Reject()
 					return
 				}
-
-				errs = delivery.Ack()
 			})
 		}
 	case cmd.MessageQueueEngineNSQ:
@@ -120,7 +98,7 @@ func NewServer(cfg *cmd.Config) WebhookServer {
 			svr.mq, err = nats.New(cfg)
 		}
 	default:
-		panic(fmt.Sprintf("invalid database engine %s", cfg.DB.Engine))
+		// by default it will select in-memory pubsub
 	}
 	if err != nil {
 		panic(err)
@@ -137,6 +115,12 @@ func (s *webhookServer) VarCtx(ctx context.Context, src interface{}, tag string)
 	return s.v.VarCtx(ctx, src, tag)
 }
 
+func (s *webhookServer) logErrorIfAny(err error) {
+	if err != nil {
+		s.LogError(err)
+	}
+}
+
 func (*webhookServer) LogError(err error) {
 	log.Println("Error", err)
 }
@@ -144,7 +128,7 @@ func (*webhookServer) LogError(err error) {
 func (s *webhookServer) Publish(ctx context.Context, req *pb.SendWebhookRequest) (*entity.WebhookRequest, error) {
 	utcNow := time.Now().UTC()
 
-	// may be we store into database first before publish to message queue
+	// Store the request to DB first before publishing it to message queue
 	data := entity.WebhookRequest{}
 	data.ID = ksuid.New()
 	data.Method = req.Method.String()
@@ -176,9 +160,7 @@ func (s *webhookServer) fireWebhook(data *entity.WebhookRequest) error {
 	ctx := context.TODO()
 	startTime := time.Now().UTC()
 	opts := make([]retry.Option, 0)
-	// if data.Retry < 1 {
-	// 	req.Retry = 1
-	// }
+
 	log.Println("SendWebhook now....!!!")
 
 	opts = append(opts, retry.Attempts(10))
