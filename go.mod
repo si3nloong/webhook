@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/go-playground/validator/v10 v10.10.1
-	github.com/go-redis/redis/v8 v8.11.4
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
@@ -55,7 +55,7 @@ require (
 )
 
 require (
-	github.com/99designs/gqlgen v0.17.1
+	github.com/99designs/gqlgen v0.17.2
 	github.com/adjust/rmq/v4 v4.0.2-0.20211012160217-2c375330b960
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.17.1
