@@ -52,7 +52,7 @@ require (
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
@@ -67,7 +67,7 @@ require (
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/rs/cors v1.8.2
 	github.com/segmentio/ksuid v1.0.4
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.3
 	github.com/tidwall/gjson v1.14.1
 	github.com/vektah/gqlparser/v2 v2.4.4
 )
