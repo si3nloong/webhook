@@ -69,5 +69,5 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.1
 	github.com/tidwall/gjson v1.14.1
-	github.com/vektah/gqlparser/v2 v2.4.4
+	github.com/vektah/gqlparser/v2 v2.4.6
 )
