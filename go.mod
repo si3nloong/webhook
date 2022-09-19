@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/nats-io/nats.go v1.16.0
+	github.com/nats-io/nats.go v1.17.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.12.0
 	github.com/valyala/fasthttp v1.37.0
@@ -52,11 +52,11 @@ require (
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	github.com/99designs/gqlgen v0.17.9
+	github.com/99designs/gqlgen v0.17.19
 	github.com/adjust/rmq/v4 v4.0.2-0.20211012160217-2c375330b960
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.17.1
@@ -69,5 +69,5 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.7.1
 	github.com/tidwall/gjson v1.14.1
-	github.com/vektah/gqlparser/v2 v2.4.4
+	github.com/vektah/gqlparser/v2 v2.5.1
 )
